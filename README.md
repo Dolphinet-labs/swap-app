@@ -1,4 +1,4 @@
-# RootHash Chain swap V1
+# Dolphinnet Chain swap V1
 
 ## Project setup
 ```
