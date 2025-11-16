@@ -1010,6 +1010,11 @@ a {
   position: absolute;
   z-index: 1000;
 
+  /* iOS Safari 安全区域适配 */
+  @supports (padding: max(0px)) {
+    padding-top: env(safe-area-inset-top);
+  }
+
   :deep(.el-dialog) {
     --el-dialog-bg-color: #000 !important;
     z-index: 2000;
@@ -1030,6 +1035,12 @@ a {
     padding: 0 8px;
     width: calc(100% - 16px);
     // border-radius: 100px;
+
+    /* iOS Safari 安全区域适配 */
+    @supports (padding: max(0px)) {
+      top: env(safe-area-inset-top);
+      height: calc(72px + env(safe-area-inset-top));
+    }
 
     .gridContent {
       height: 72px;
@@ -1074,6 +1085,17 @@ a {
         font-size: 14px;
         font-weight: 500;
         background: transparent;
+
+        /* iOS 触摸优化 */
+        min-height: 44px;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        user-select: none;
+        transition: transform 0.1s ease, opacity 0.2s ease;
+
+        &:active {
+          transform: scale(0.95);
+        }
       }
 
       .conentc-btn {
@@ -1132,16 +1154,13 @@ a {
       display: flex;
       align-items: center;
       justify-content: center;
-      // display: none;
     }
 
     .content {
       height: 48px;
       width: calc(100% - 16px);
       padding: 0 8px;
-
       backdrop-filter: blur(14px);
-      // border-radius: 100px;
 
       .gridContent {
         height: 48px;
@@ -1151,9 +1170,9 @@ a {
         padding-left: 12px;
 
         img {
-          height: 62px;
-          margin-left: 6px;
-          margin-top: 5px;
+          height: 56px;
+          margin-left: 4px;
+          margin-top: 4px;
           filter: brightness(0) saturate(100%) invert(27%) sepia(93%) saturate(1352%) hue-rotate(195deg) brightness(100%) contrast(100%);
         }
       }
@@ -1164,28 +1183,39 @@ a {
         align-items: center;
         justify-content: flex-end;
         width: 100%;
+        gap: 8px;
 
         img {
-          height: 30px;
+          height: 28px;
         }
 
-        button {
-          margin-top: 8px;
-          cursor: pointer;
-          display: flex;
-          height: 44px;
-          padding: 0px 16px;
-          justify-content: center;
-          align-items: center;
-          gap: 10px;
-          border-radius: 100px;
-          border: 1px solid #0066cc;
-          color: #0066cc;
+          button {
+            margin-top: 0;
+            cursor: pointer;
+            display: flex;
+            height: 36px;
+            min-height: 44px; /* iOS 最小触摸目标 */
+            padding: 0px 14px;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            border-radius: 100px;
+            border: 1px solid #0066cc;
+            color: #0066cc;
+            font-size: 14px;
+            font-weight: 500;
+            background: transparent;
 
-          font-size: 16px;
-          font-weight: 500;
-          background: transparent;
-        }
+            /* iOS 触摸优化 */
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+            transition: transform 0.1s ease, opacity 0.2s ease;
+
+            &:active {
+              transform: scale(0.95);
+            }
+          }
 
         .menu {
           display: none;
@@ -1195,35 +1225,36 @@ a {
           height: 44px;
           display: flex;
           align-items: center;
+          gap: 8px;
 
           img {
             height: 20px;
-            margin-right: 10px;
+            margin-right: 0;
           }
 
           button {
-            margin-top: 0px !important;
+            margin-top: 0 !important;
             cursor: pointer;
             display: flex;
-            height: 25px;
+            height: 36px;
+            min-height: 36px;
             justify-content: center;
             align-items: center;
-            width: 100px;
-            padding: 0 5px;
+            width: auto;
+            min-width: 90px;
+            padding: 0 12px;
             border-radius: 100px;
             border: 1px solid #0066cc;
             color: #0066cc;
-            font-family: "PingFang SC";
-            font-size: 12px;
+            font-family: "PingFang SC", sans-serif;
+            font-size: 13px;
             font-weight: 500;
             background: transparent;
           }
 
           button:hover {
             cursor: pointer;
-
             border: 1px solid #0066cc;
-
             color: #0066cc;
             background: rgba(0, 102, 204, 0.1);
           }
@@ -1237,8 +1268,39 @@ a {
 
     :deep(.el-menu:not(.el-menu--collapse)) {
       .el-sub-menu__title {
-        // padding-right: unset;
-        min-width: 85px;
+        min-width: 44px;
+        padding-right: 8px;
+      }
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .content {
+      .gridContent {
+        padding-left: 8px;
+        
+        img {
+          height: 50px;
+          margin-left: 2px;
+        }
+      }
+      
+      .gridContent2 {
+        gap: 6px;
+        
+        button {
+          font-size: 12px;
+          padding: 0 10px;
+          min-width: 80px;
+        }
+        
+        .menu1 {
+          button {
+            min-width: 75px;
+            font-size: 12px;
+            padding: 0 10px;
+          }
+        }
       }
     }
   }

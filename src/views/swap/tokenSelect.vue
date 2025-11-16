@@ -170,58 +170,126 @@ function getIcon(icon) {
     @media screen and (max-width: 768px) {
         .modal-header {
             font-size: 18px;
+            padding: 16px 20px;
         }
         .modal-content {
             top: auto;
             bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            max-width: 90vw;
-            // width: auto;
-            // max-width: 100%;
-            height: 400px;
-            padding:  20px;
-            border-radius: 18px 18px 0 0;
+            left: 0;
+            right: 0;
+            transform: none;
+            max-width: 100%;
+            width: 100%;
+            height: 70vh;
+            max-height: 600px;
+            padding: 16px;
+            border-radius: 20px 20px 0 0;
             animation: slideUp 0.25s ease-out;
         }
         .modal-close {
-        font-size: 20px;
-        cursor: pointer;
-        user-select: none;
-        line-height: 1;
-    }
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+            line-height: 1;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         @keyframes slideUp {
             from {
-                transform: translateX(-50%) translateY(100%);
+                transform: translateY(100%);
             }
 
             to {
-                transform: translateX(-50%) translateY(0);
+                transform: translateY(0);
+            }
+        }
+        
+        .search-box {
+            margin-bottom: 16px;
+            
+            input {
+                font-size: 16px;
+                padding: 12px 16px;
+                min-height: 44px;
+            }
+        }
+        
+        .token-list {
+            .token-item {
+                padding: 14px 16px;
+                min-height: 64px;
+                
+                .token-info {
+                    .token-name {
+                        font-size: 15px;
+                    }
+                    
+                    .token-symbol {
+                        font-size: 13px;
+                    }
+                }
+                
+                img {
+                    width: 40px;
+                    height: 40px;
+                }
+            }
+        }
+    }
+    
+    @media screen and (max-width: 480px) {
+        .modal-content {
+            height: 75vh;
+            padding: 12px;
+        }
+        
+        .modal-header {
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+        
+        .search-box {
+            margin-bottom: 12px;
+            
+            input {
+                font-size: 14px;
+                padding: 10px 14px;
+            }
+        }
+        
+        .token-list {
+            .token-item {
+                padding: 12px;
+                min-height: 60px;
+                
+                img {
+                    width: 36px;
+                    height: 36px;
+                }
             }
         }
     }
     .search-box {
-        // padding: 0 20px;
-        // height: 80px;
         display: flex;
         justify-content: center;
         align-items: center;
         margin-bottom: 24px;
-    }
-
-    .search-box input {
-        width: 100%;
-        height: 38px;
-        border: none;
-        outline: none;
-        // color: #666868;
-        // padding: 10px;
-        padding: 0 20px;
-        border-radius: 100px;
-        background: var(--el-bg-color);
-        border: none;
-        color: var(--text-color);
-        font-size: 16px;
+        
+        input {
+            width: 100%;
+            height: 44px;
+            min-height: 44px;
+            border: none;
+            outline: none;
+            padding: 0 20px;
+            border-radius: 100px;
+            background: var(--el-bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+        }
     }
 
     .search-box input::placeholder {
@@ -246,10 +314,9 @@ function getIcon(icon) {
     .token-item {
         display: flex;
         align-items: center;
-        // padding: ;
         cursor: pointer;
-        height: 64px;
-        // border-bottom: 1px solid #22232a;
+        min-height: 64px;
+        padding: 12px 0;
         transition: background .2s;
 
         &:hover {
@@ -257,26 +324,32 @@ function getIcon(icon) {
         }
 
         .token-icon {
-            width: 38px;
-            height: 38px;
-            margin-right: 8px;
+            width: 40px;
+            height: 40px;
+            margin-right: 12px;
             border-radius: 50%;
+            flex-shrink: 0;
         }
 
         .token-info {
             flex: 1;
+            min-width: 0;
         }
 
         .token-symbol {
             font-weight: 600;
             text-align: left;
-            font-size: 14px;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        
+        .token-name {
+            font-size: 13px;
+            color: rgba(0, 0, 0, 0.6);
         }
 
         .token-address {
             color: var(--text-color);
-
-
             font-size: 12px;
             font-style: normal;
             font-weight: 400;
@@ -285,16 +358,14 @@ function getIcon(icon) {
         }
 
         .token-balance {
-            min-width: 56px;
+            min-width: 60px;
             text-align: right;
-
-            color: var(---, #FFF);
-            text-align: center;
-
+            color: var(--text-color);
             font-size: 14px;
             font-style: normal;
             font-weight: 500;
             line-height: normal;
+            flex-shrink: 0;
         }
     }
 }</style>

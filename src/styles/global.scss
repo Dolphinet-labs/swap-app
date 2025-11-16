@@ -119,3 +119,594 @@ body::-webkit-scrollbar {
   display: none;
   /* Chrome/Safari/Edge */
 }
+
+/* iOS Safari 特有样式修复 */
+@supports (-webkit-touch-callout: none) {
+  /* 防止iOS Safari的长按选择文字 */
+  * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* 允许输入框和按钮可选择 */
+  input, textarea, button, select {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* 修复iOS Safari的输入框样式 */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  textarea {
+    -webkit-appearance: none;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    background-clip: padding-box;
+  }
+
+  /* 修复iOS Safari的按钮样式 */
+  button, input[type="button"], input[type="submit"] {
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+
+  /* 防止iOS Safari的弹性滚动 */
+  body {
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 修复iOS Safari的固定定位问题 */
+  .fixed-position-fix {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  /* iOS Safari 滚动条样式 */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  /* 防止iOS Safari的双击缩放 */
+  * {
+    touch-action: manipulation;
+  }
+
+  /* 优化触摸事件的响应 */
+  button, .clickable, [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* 输入框触摸优化 */
+  input, textarea, select {
+    touch-action: manipulation;
+  }
+
+  /* 滚动容器优化 */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* 防止页面滚动时的弹性效果 */
+  .prevent-scroll {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 修复iOS Safari的模态框滚动问题 */
+  .modal-open {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 手势识别优化 */
+  .gesture-area {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* 防止文本选择但允许滚动 */
+  .scrollable {
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .scrollable * {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  /* 移动端输入框优化样式 */
+  input, textarea, [contenteditable] {
+    /* 防止iOS Safari自动缩放 */
+    font-size: 16px !important;
+    line-height: 1.2;
+
+    /* 触摸优化 */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+
+    /* 聚焦时样式 */
+    &:focus {
+      outline: none;
+      background: transparent;
+    }
+
+    /* 输入框激活状态 */
+    &.input-focused {
+      box-shadow: 0 0 0 2px rgba(0, 206, 122, 0.2);
+      border-color: var(--el-menu-active-color);
+    }
+
+    /* iOS Safari 数字键盘优化 */
+    &[type="number"] {
+      inputmode: decimal;
+    }
+
+    /* 防止自动填充样式 */
+    &:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+      -webkit-text-fill-color: var(--text-color);
+      box-shadow: 0 0 0px 1000px transparent inset;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+  }
+
+  /* 移动端输入框容器样式 */
+  .input-container {
+    position: relative;
+
+    /* 防止iOS Safari的弹性滚动影响输入 */
+    overflow: hidden;
+
+    &.input-active {
+      z-index: 100;
+    }
+  }
+
+  /* 虚拟键盘适配 */
+  @media screen and (max-width: 768px) {
+    /* 当键盘弹出时，调整页面布局 */
+    body.keyboard-active {
+      position: fixed;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 输入框聚焦时的特殊处理 */
+    input:focus, textarea:focus, [contenteditable]:focus {
+      /* 确保输入框在键盘上方 */
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+  }
+
+  /* 触摸反馈样式 */
+  .touch-active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+
+  /* 波纹效果 */
+  @keyframes ripple {
+    to {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+
+  .ripple {
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    &:active::before {
+      width: 300px;
+      height: 300px;
+    }
+  }
+
+  /* 按钮触摸优化 */
+  button, [role="button"], .clickable {
+    /* 确保最小触摸目标 */
+    min-height: 44px;
+    min-width: 44px;
+
+    /* 触摸反馈 */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+
+    /* 过渡动画 */
+    transition: transform 0.1s ease, opacity 0.2s ease;
+
+    /* 聚焦样式 */
+    &:focus-visible {
+      outline: 2px solid var(--el-menu-active-color);
+      outline-offset: 2px;
+    }
+
+    /* 禁用状态 */
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* 悬停状态（桌面端） */
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  /* 交互元素通用样式 */
+  .interactive {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  /* 移动端模态框优化样式 */
+  .mobile-modal-optimized {
+    z-index: 9999;
+
+    .modal-content, .modal-body, .drawer-body,
+    .el-dialog__body, .el-drawer__body {
+      /* 移动端滚动优化 */
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+
+      /* 防止iOS Safari的弹性滚动 */
+      @supports (-webkit-touch-callout: none) {
+        overscroll-behavior: none;
+      }
+    }
+
+    /* 模态框指示器 */
+    .modal-indicator {
+      touch-action: none;
+      cursor: grab;
+
+      &:active {
+        cursor: grabbing;
+      }
+    }
+
+    /* 模态框头部优化 */
+    .modal-header, .drawer-header, .el-dialog__header {
+      /* 确保头部可触摸 */
+      min-height: 44px;
+      padding: 16px;
+      -webkit-touch-callout: none;
+      user-select: none;
+    }
+
+    /* 关闭按钮优化 */
+    .modal-close, .close-btn {
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s ease;
+
+      &:active {
+        transform: scale(0.9);
+      }
+    }
+  }
+
+  /* 模态框遮罩优化 */
+  .modal-mask, .modal-backdrop, .el-overlay {
+    background: rgba(0, 0, 0, 0.5);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease;
+
+    /* 防止遮罩后的内容滚动 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9998;
+  }
+
+  /* 移动端图片优化样式 */
+  img {
+    /* 防止图片在移动端被拉伸 */
+    max-width: 100%;
+    height: auto;
+
+    /* 图片加载优化 */
+    &.loading {
+      filter: blur(1px);
+      transform: scale(1.01);
+      transition: filter 0.3s ease, transform 0.3s ease;
+    }
+
+    &.loaded {
+      filter: blur(0);
+      transform: scale(1);
+    }
+
+    &.error {
+      opacity: 0.6;
+      filter: grayscale(100%);
+    }
+
+    /* 懒加载占位符 */
+    &[data-src] {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading-shimmer 1.5s infinite;
+    }
+  }
+
+  @keyframes loading-shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* 移动端图片容器 */
+  .image-container {
+    position: relative;
+    overflow: hidden;
+
+    /* 防止布局偏移 */
+    &::before {
+      content: '';
+      display: block;
+      padding-bottom: 56.25%; /* 16:9 宽高比 */
+    }
+
+    img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  /* 响应式图片 */
+  .responsive-image {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+
+    @media (max-width: 768px) {
+      /* 移动端图片压缩 */
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+  }
+
+  /* WebP 支持检测 */
+  @supports (object-fit: cover) {
+    .webp-supported {
+      .image-fallback {
+        display: none;
+      }
+    }
+
+    .webp-not-supported {
+      .image-webp {
+        display: none;
+      }
+    }
+  }
+
+  /* 图片懒加载容器 */
+  .lazy-image-container {
+    position: relative;
+    background: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+
+    /* 默认宽高比 */
+    &::before {
+      content: '';
+      display: block;
+      padding-bottom: 66.67%; /* 3:2 宽高比 */
+    }
+
+    img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+
+      &.loaded {
+        opacity: 1;
+      }
+    }
+
+    /* 加载指示器 */
+    .image-loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px;
+      height: 32px;
+      border: 3px solid #f0f0f0;
+      border-top: 3px solid #0066cc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  @keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  /* 性能优化相关样式 */
+  .performance-warning {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ff6b6b;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    z-index: 10000;
+    font-size: 14px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease;
+
+    @media (max-width: 768px) {
+      top: 10px;
+      right: 10px;
+      left: 10px;
+      text-align: center;
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 省电模式样式 */
+  .power-saving-mode {
+    /* 降低动画复杂度 */
+    *, *::before, *::after {
+      animation-duration: calc(var(--animation-duration, 1s) * 2) !important;
+      transition-duration: calc(var(--transition-duration, 0.3s) * 2) !important;
+    }
+
+    /* 减少视觉效果 */
+    .animated, .wow {
+      animation: none !important;
+    }
+
+    /* 简化背景 */
+    .gradient-bg, .animated-bg {
+      background: #f5f5f5 !important;
+    }
+  }
+
+  /* 页面隐藏时的样式 */
+  .page-hidden {
+    /* 暂停动画 */
+    *, *::before, *::after {
+      animation-play-state: paused !important;
+    }
+
+    /* 降低更新频率 */
+    .updating-element {
+      animation-duration: calc(var(--update-frequency, 1) * 2s) !important;
+    }
+  }
+
+  /* 减少动画模式 */
+  .reduce-animations {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* 减少网络活动模式 */
+  .reduce-network {
+    /* 隐藏自动刷新内容 */
+    .auto-refresh {
+      display: none !important;
+    }
+
+    /* 减少轮询频率 */
+    .polling-element {
+      animation-duration: 60s !important; /* 从30s改为60s */
+    }
+  }
+
+  /* GPU加速元素 */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* 性能监控指示器 */
+  .performance-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 10000;
+    font-family: monospace;
+
+    @media (max-width: 768px) {
+      bottom: 10px;
+      left: 10px;
+      font-size: 11px;
+    }
+  }
+}

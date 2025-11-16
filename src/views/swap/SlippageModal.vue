@@ -198,7 +198,63 @@ function confirm() {
       margin-top: 2px;
       cursor: pointer;
       transition: background 0.2s;
+      min-height: 44px; // 确保触摸目标足够大
       &:hover { background: var(--el-menu-active-color); }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-mask {
+    padding: 0;
+    align-items: flex-end;
+    
+    .modal-box {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 20px 20px 0 0;
+      margin: 0;
+      padding: 20px 16px 16px;
+      min-width: auto;
+      
+      .modal-title {
+        font-size: 16px;
+        margin-bottom: 16px;
+        
+        .close-btn {
+          font-size: 24px;
+          min-width: 44px;
+          min-height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+      
+      .modal-content {
+        padding: 0 12px;
+        margin-bottom: 8px;
+        
+        .modal-input {
+          font-size: 16px;
+          padding: 14px 0;
+        }
+        
+        .modal-percent {
+          font-size: 14px;
+        }
+      }
+      
+      .modal-warn {
+        font-size: 12px;
+        padding: 4px 0 8px 0;
+      }
+      
+      .modal-confirm {
+        height: 48px;
+        font-size: 16px;
+        margin-top: 8px;
+      }
     }
   }
 }

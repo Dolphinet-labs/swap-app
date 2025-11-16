@@ -13,7 +13,7 @@
           <div class="swap-label">{{ $t('swap.sell') }}</div>
           <div class="swap-amount-row">
 
-            <input type="number" v-model="amountIn" class="swap-amount-input" placeholder="0.00" />
+            <input type="text" inputmode="decimal" v-model="amountIn" class="swap-amount-input" placeholder="0.00" />
             <div class="swap-token-btn" @click="selIcon(1, fromSymbol)">
               <img :src="fromIcon" alt="">
               <span>{{ fromSymbol }}</span>
@@ -210,8 +210,6 @@ const { connect, connectors, error } = useConnect();
 const { address, status } = useAccount()
 import { eventBus } from '../../utils/eventBus'
 
-import VConsole from 'vconsole';
-const vConsole = new VConsole();
 // const { connector } = useAccount()
 // console.log(connector)
 
@@ -722,11 +720,40 @@ input[type="number"] {
         font-size: 32px;
         font-weight: 600;
         width: 80%;
-        
+
+        /* iOS Safari 输入框优化 */
+        -webkit-appearance: none;
+        -webkit-text-size-adjust: 100%;
+        -webkit-user-select: text;
+        user-select: text;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+
+        /* 防止iOS Safari自动缩放输入框 */
+        font-size: 16px !important;
+        line-height: 1.2;
+
         &::placeholder {
           color: rgba(0, 0, 0, 0.3);
           opacity: 0.5;
         }
+
+        /* 聚焦时样式 */
+        &:focus {
+          outline: none;
+          background: transparent;
+        }
+
+        /* 防止iOS Safari的自动填充样式 */
+        &:-webkit-autofill {
+          -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+          -webkit-text-fill-color: var(--text-color);
+          box-shadow: 0 0 0px 1000px transparent inset;
+          transition: background-color 5000s ease-in-out 0s;
+        }
+
+        /* iOS Safari 数字键盘优化 */
+        inputmode: decimal;
       }
 
       .swap-token-btn {
@@ -740,21 +767,33 @@ input[type="number"] {
         justify-content: center;
         gap: 6px;
         font-weight: 500;
-        
+        min-height: 44px; /* iOS 最小触摸目标 */
+        min-width: 44px;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        user-select: none;
+
         &:hover {
           opacity: 0.8;
+        }
+
+        &:active {
+          transform: scale(0.98);
+          transition: transform 0.1s ease;
         }
 
         img {
           width: 20px;
           height: 20px;
           border-radius: 50%;
+          flex-shrink: 0;
         }
 
         span {
           color: var(--text-color);
           font-size: 14px;
           font-weight: 500;
+          white-space: nowrap;
         }
       }
 
@@ -807,10 +846,23 @@ input[type="number"] {
       cursor: pointer;
       position: relative;
       z-index: 10;
-      
+      min-width: 44px;
+      min-height: 44px;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      user-select: none;
+
       &:hover {
         opacity: 0.8;
       }
+
+      &:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+      }
+
+      /* 添加触摸反馈动画 */
+      transition: transform 0.1s ease, opacity 0.2s ease;
     }
   }
 
@@ -825,10 +877,22 @@ input[type="number"] {
     margin-bottom: 16px;
     background: var(--el-bg-color);
     cursor: pointer;
-    
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+
     &:hover {
       opacity: 0.8;
     }
+
+    &:active {
+      transform: scale(0.98);
+      transition: transform 0.1s ease;
+    }
+
+    /* 添加触摸反馈动画 */
+    transition: transform 0.1s ease, opacity 0.2s ease;
 
     .setting-label {
       color: var(--text-color);
@@ -846,6 +910,12 @@ input[type="number"] {
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      min-height: 44px;
+      min-width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
     }
   }
 
@@ -862,16 +932,30 @@ input[type="number"] {
     opacity: 0.6;
     margin-top: 8px;
     outline: none;
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+    transition: transform 0.1s ease, opacity 0.2s ease, background-color 0.2s ease;
 
     &:not([disabled]) {
       background: var(--el-menu-active-color);
       color: var(--el-menu-bg-color);
       cursor: pointer;
       opacity: 1;
-      
+
       &:hover {
         opacity: 0.9;
       }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
     }
   }
 }
@@ -879,12 +963,469 @@ input[type="number"] {
 
 @media (max-width: 768px) {
   #container {
-    width: calc(100vw - 30px);
-    padding: 0 15px;
+    width: 100%;
+    padding: 0 16px;
+    min-height: 100vh;
+    padding-bottom: 20px;
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 24px;
+      height: auto;
+      min-height: 34px;
+    }
+
+    .contents {
+      padding-top: 60px;
+    }
+  }
+
+  .swap-wrap {
+    padding: 0;
+    min-height: auto;
+  }
+
+  .swap-card {
+    max-width: 100%;
+    width: 100%;
+    padding: 20px 16px;
+    border-radius: 20px;
+    margin: 0 auto;
+
+    .swap-row {
+      padding: 16px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+
+      .swap-label {
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+
+      .swap-amount-row {
+        .swap-amount-input {
+          font-size: 28px;
+          width: 70%;
+        }
+
+        .swap-token-btn {
+          padding: 12px 14px;
+          min-height: 44px; // 确保触摸目标足够大
+          
+          img {
+            width: 22px;
+            height: 22px;
+          }
+
+          span {
+            font-size: 14px;
+          }
+        }
+      }
+
+      .swap-balance {
+        font-size: 12px;
+        margin-top: 6px;
+      }
+    }
+
+    .swap-switch-row {
+      width: calc(100% - 32px);
+      top: 110px;
+
+      .swap-switch-btn {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+      }
+    }
+
+    .swap-setting-row {
+      height: 44px;
+      padding: 0 16px;
+      margin-bottom: 12px;
+      min-height: 44px; // 确保触摸目标足够大
+
+      .setting-label {
+        font-size: 14px;
+      }
+
+      .slip-btn {
+        font-size: 13px;
+        min-height: 44px;
+        padding: 8px 0;
+      }
+    }
+
+    .swap-main-btn {
+      height: 48px;
+      font-size: 16px;
+      min-height: 48px; // 确保触摸目标足够大
+      margin-top: 12px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  #container {
+    padding: 0 12px;
 
     h1 {
       font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .contents {
+      padding-top: 50px;
+    }
+  }
+
+  .swap-card {
+    padding: 16px 12px;
+
+    .swap-row {
+      padding: 14px;
+
+      .swap-amount-row {
+        .swap-amount-input {
+          font-size: 24px;
+        }
+
+        .swap-token-btn {
+          padding: 10px 12px;
+        }
+      }
+    }
+
+    .swap-switch-row {
+      top: 105px;
+    }
+  }
+}
+
+/* iPhone SE (375x667) 和类似小屏设备 */
+@media only screen
+  and (device-width: 375px)
+  and (device-height: 667px)
+  and (-webkit-device-pixel-ratio: 2) {
+  #container {
+    h1 {
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .contents {
+      padding-top: 40px;
+    }
+  }
+
+  .swap-card {
+    padding: 14px 10px;
+
+    .swap-row {
+      padding: 12px;
+      margin-bottom: 10px;
+
+      .swap-amount-row {
+        .swap-amount-input {
+          font-size: 22px;
+          width: 65%;
+        }
+
+        .swap-token-btn {
+          padding: 8px 10px;
+          font-size: 13px;
+
+          img {
+            width: 18px;
+            height: 18px;
+          }
+
+          span {
+            font-size: 13px;
+          }
+        }
+      }
+
+      .swap-balance {
+        font-size: 11px;
+        margin-top: 6px;
+      }
+    }
+
+    .swap-switch-row {
+      top: 95px;
+
+      .swap-switch-btn {
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    .swap-setting-row {
+      height: 40px;
+      padding: 0 14px;
+      margin-bottom: 10px;
+
+      .setting-label {
+        font-size: 13px;
+      }
+    }
+
+    .swap-main-btn {
+      height: 44px;
+      font-size: 15px;
+      margin-top: 10px;
+    }
+  }
+}
+
+/* iPhone X/XS/11 Pro/12 mini/13 mini (375x812) */
+@media only screen
+  and (device-width: 375px)
+  and (device-height: 812px)
+  and (-webkit-device-pixel-ratio: 3) {
+  #container {
+    h1 {
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    .contents {
+      padding-top: 50px;
+    }
+  }
+
+  .swap-card {
+    padding: 18px 14px;
+
+    .swap-row {
+      padding: 16px;
+      margin-bottom: 12px;
+
+      .swap-amount-row {
+        .swap-amount-input {
+          font-size: 26px;
+          width: 70%;
+        }
+
+        .swap-token-btn {
+          padding: 10px 12px;
+          min-height: 44px;
+
+          img {
+            width: 20px;
+            height: 20px;
+          }
+
+          span {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+
+    .swap-switch-row {
+      top: 110px;
+
+      .swap-switch-btn {
+        width: 46px;
+        height: 46px;
+      }
+    }
+
+    .swap-main-btn {
+      height: 48px;
+      font-size: 16px;
+      margin-top: 12px;
+    }
+  }
+}
+
+/* iPhone 12/13/14 (390x844) */
+@media only screen
+  and (device-width: 390px)
+  and (device-height: 844px)
+  and (-webkit-device-pixel-ratio: 3) {
+  #container {
+    h1 {
+      font-size: 28px;
       margin-bottom: 24px;
+    }
+
+    .contents {
+      padding-top: 55px;
+    }
+  }
+
+  .swap-card {
+    padding: 20px 16px;
+
+    .swap-row {
+      padding: 18px;
+      margin-bottom: 14px;
+
+      .swap-amount-row {
+        .swap-amount-input {
+          font-size: 28px;
+          width: 72%;
+        }
+
+        .swap-token-btn {
+          padding: 12px 14px;
+          min-height: 46px;
+
+          img {
+            width: 22px;
+            height: 22px;
+          }
+
+          span {
+            font-size: 15px;
+          }
+        }
+      }
+    }
+
+    .swap-switch-row {
+      top: 118px;
+
+      .swap-switch-btn {
+        width: 48px;
+        height: 48px;
+      }
+    }
+
+    .swap-main-btn {
+      height: 50px;
+      font-size: 17px;
+      margin-top: 14px;
+    }
+  }
+}
+
+/* iPhone 15 (393x852) */
+@media only screen
+  and (device-width: 393px)
+  and (device-height: 852px)
+  and (-webkit-device-pixel-ratio: 3) {
+  #container {
+    h1 {
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+
+    .contents {
+      padding-top: 55px;
+    }
+  }
+
+  .swap-card {
+    padding: 20px 16px;
+
+    .swap-row {
+      padding: 18px;
+      margin-bottom: 14px;
+
+      .swap-amount-row {
+        .swap-amount-input {
+          font-size: 28px;
+          width: 72%;
+        }
+
+        .swap-token-btn {
+          padding: 12px 14px;
+          min-height: 46px;
+
+          img {
+            width: 22px;
+            height: 22px;
+          }
+
+          span {
+            font-size: 15px;
+          }
+        }
+      }
+    }
+
+    .swap-switch-row {
+      top: 118px;
+
+      .swap-switch-btn {
+        width: 48px;
+        height: 48px;
+      }
+    }
+
+    .swap-main-btn {
+      height: 50px;
+      font-size: 17px;
+      margin-top: 14px;
+    }
+  }
+}
+
+/* iPhone 6/7/8 Plus, XS Max, XR, 11, 11 Pro Max, 12/13/14 Pro Max, 15 Plus/Pro Max (414x896, 428x926, 430x932) */
+@media only screen
+  and (min-device-width: 414px)
+  and (max-device-width: 430px)
+  and (-webkit-device-pixel-ratio: 3) {
+  #container {
+    h1 {
+      font-size: 30px;
+      margin-bottom: 26px;
+    }
+
+    .contents {
+      padding-top: 60px;
+    }
+  }
+
+  .swap-card {
+    max-width: 400px;
+    padding: 22px 18px;
+
+    .swap-row {
+      padding: 20px;
+      margin-bottom: 16px;
+
+      .swap-amount-row {
+        .swap-amount-input {
+          font-size: 30px;
+          width: 74%;
+        }
+
+        .swap-token-btn {
+          padding: 14px 16px;
+          min-height: 48px;
+
+          img {
+            width: 24px;
+            height: 24px;
+          }
+
+          span {
+            font-size: 16px;
+          }
+        }
+      }
+    }
+
+    .swap-switch-row {
+      top: 125px;
+
+      .swap-switch-btn {
+        width: 50px;
+        height: 50px;
+      }
+    }
+
+    .swap-main-btn {
+      height: 52px;
+      font-size: 18px;
+      margin-top: 16px;
     }
   }
 }

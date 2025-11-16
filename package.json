@@ -24,7 +24,6 @@
     "mitt": "^3.0.1",
     "pinia": "^3.0.3",
     "swiper": "^11.2.8",
-    "vconsole": "^3.15.1",
     "viem": "latest",
     "vue": ">=3.4.21",
     "vue-clipboard3": "^2.0.0",
