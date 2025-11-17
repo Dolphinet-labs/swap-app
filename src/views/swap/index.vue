@@ -215,7 +215,7 @@ import { eventBus } from '../../utils/eventBus'
 
 console.log(status)
 import TokenModal from './tokenSelect.vue'
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import SlippageModal from "./SlippageModal.vue"
 import { BrowserProvider, Contract, parseUnits, formatUnits, MaxUint256, JsonRpcProvider } from 'ethers'
 import { estimateQuotes, getPoolReserves, TOKEN_LIST } from './uniswapQuote'
@@ -558,8 +558,76 @@ watch(
     }
   }
 )
+// 保存观察器和事件监听器的引用，用于清理
+let positionObserver = null
+let resizeHandler = null
+
 onMounted(() => {
   // connectWallet()
+  
+  // 动态计算交换按钮的位置，使其精确居中
+  const updateSwitchButtonPosition = () => {
+    const swapCard = document.querySelector('.swap-card')
+    const swapRows = document.querySelectorAll('.swap-row')
+    const switchRow = document.querySelector('.swap-switch-row')
+    
+    if (swapCard && swapRows.length >= 2 && switchRow) {
+      const firstRow = swapRows[0]
+      const secondRow = swapRows[1]
+      
+      const firstRowRect = firstRow.getBoundingClientRect()
+      const secondRowRect = secondRow.getBoundingClientRect()
+      const cardRect = swapCard.getBoundingClientRect()
+      
+      // 计算第一个swap-row相对于card的位置
+      const firstRowBottom = firstRowRect.bottom - cardRect.top
+      const secondRowTop = secondRowRect.top - cardRect.top
+      
+      // 计算两个row之间的中间位置
+      const middlePosition = (firstRowBottom + secondRowTop) / 2
+      
+      // 设置按钮位置（使用translateY(-50%)来精确居中）
+      switchRow.style.top = `${middlePosition}px`
+    }
+  }
+  
+  // 初始计算
+  setTimeout(() => {
+    updateSwitchButtonPosition()
+  }, 100)
+  
+  // 保存resize事件处理器
+  resizeHandler = updateSwitchButtonPosition
+  window.addEventListener('resize', resizeHandler)
+  
+  // 监听内容变化（如余额更新、内容加载）
+  positionObserver = new MutationObserver(() => {
+    setTimeout(updateSwitchButtonPosition, 50)
+  })
+  
+  const swapCard = document.querySelector('.swap-card')
+  if (swapCard) {
+    positionObserver.observe(swapCard, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    })
+  }
+})
+
+onBeforeUnmount(() => {
+  // 清理事件监听器
+  if (resizeHandler) {
+    window.removeEventListener('resize', resizeHandler)
+    resizeHandler = null
+  }
+  
+  // 清理观察器
+  if (positionObserver) {
+    positionObserver.disconnect()
+    positionObserver = null
+  }
 })
 </script>
 
@@ -828,11 +896,18 @@ input[type="number"] {
   .swap-switch-row {
     display: flex;
     justify-content: center;
+    align-items: center;
     position: absolute;
-    width: calc(100% - 32px);
-    top: 125.4px;
-    // bottom: 0px;
-    // transform: translateY(-50%);
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    /* 精确计算桌面端位置：基于第一个swap-row的实际高度 */
+    /* swap-card padding-top: 24px */
+    /* 第一个swap-row: padding(20px*2) + label(14px+10px) + amount-row(约75px) + balance(13px+8px) = 约164px */
+    /* margin-bottom的一半: 8px */
+    /* 总计: 24px + 164px + 8px = 196px */
+    top: calc(24px + 20px + 24px + 75px + 21px + 20px + 8px);
+    z-index: 10;
+    width: auto;
 
     .swap-switch-btn {
       border: 2px solid var(--el-menu-active-color);
@@ -851,6 +926,7 @@ input[type="number"] {
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
       user-select: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
       &:hover {
         opacity: 0.8;
@@ -961,24 +1037,32 @@ input[type="number"] {
 }
 
 
-/* 移动端通用样式 - 统一比例系统 */
 @media (max-width: 768px) {
   #container {
     width: 100%;
-    padding: 0 16px;
+    padding: 0;
     min-height: 100vh;
-    padding-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     h1 {
-      font-size: 32px; /* 统一标题大小 */
-      margin-bottom: 28px;
+      font-size: 28px;
+      margin-bottom: 24px;
       height: auto;
-      min-height: 38px;
-      letter-spacing: -0.5px;
+      min-height: 34px;
     }
 
     .contents {
-      padding-top: 70px; /* 增加顶部间距 */
+      padding-top: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 60px 16px 20px;
+      box-sizing: border-box;
     }
   }
 
@@ -988,268 +1072,36 @@ input[type="number"] {
   }
 
   .swap-card {
-    max-width: 100%;
-    width: 100%;
-    padding: 24px 18px; /* 统一内边距 */
+    max-width: 90%;
+    width: 90%;
+    padding: 20px 16px;
     border-radius: 20px;
     margin: 0 auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    position: relative;
 
     .swap-row {
-      padding: 18px; /* 统一行内边距 */
+      padding: 16px;
       border-radius: 16px;
-      margin-bottom: 16px; /* 增加行间距 */
-      background: var(--el-bg-color);
-      border: 1px solid var(--el-border-color-light);
-      transition: all 0.2s ease;
-
-      &:hover {
-        border-color: rgba(0, 206, 122, 0.3);
-      }
+      margin-bottom: 12px;
 
       .swap-label {
-        font-size: 14px; /* 统一标签大小 */
-        margin-bottom: 10px;
-        font-weight: 500;
-        color: var(--text-color);
-        opacity: 0.8;
-      }
-
-      .swap-amount-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-
-        .swap-amount-input {
-          font-size: 28px; /* 统一输入框字体 */
-          font-weight: 600;
-          width: 100%;
-          flex: 1;
-          background: transparent;
-          border: none;
-          outline: none;
-          color: var(--text-color);
-          line-height: 1.2;
-
-          &::placeholder {
-            color: rgba(0, 0, 0, 0.4);
-            opacity: 0.6;
-          }
-        }
-
-        .swap-token-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 16px;
-          min-height: 48px; /* 统一按钮高度 */
-          background: var(--el-menu-bg-color);
-          border: 1px solid var(--el-border-color-light);
-          border-radius: 12px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          flex-shrink: 0;
-
-          &:hover {
-            background: rgba(0, 206, 122, 0.05);
-            border-color: rgba(0, 206, 122, 0.3);
-          }
-
-          &:active {
-            transform: scale(0.98);
-          }
-
-          img {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-          }
-
-          span {
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text-color);
-          }
-        }
-      }
-
-      .swap-balance {
         font-size: 13px;
-        margin-top: 8px;
-        color: rgba(0, 0, 0, 0.6);
-        font-weight: 500;
-        text-align: left;
-      }
-    }
-
-    .swap-switch-row {
-      display: flex;
-      justify-content: center;
-      position: absolute;
-      width: calc(100% - 36px);
-      top: 120px; /* 调整位置 */
-      z-index: 10;
-
-      .swap-switch-btn {
-        width: 48px;
-        height: 48px;
-        min-width: 48px;
-        min-height: 48px;
-        background: var(--el-menu-bg-color);
-        border: 2px solid var(--el-menu-active-color);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 12px rgba(0, 206, 122, 0.2);
-
-        &:hover {
-          transform: scale(1.05);
-        }
-
-        &:active {
-          transform: scale(0.95);
-        }
-
-        svg {
-          width: 20px;
-          height: 20px;
-          color: var(--el-menu-active-color);
-        }
-      }
-    }
-
-    .swap-setting-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 56px; /* 统一设置行高度 */
-      padding: 0 18px;
-      margin-bottom: 16px;
-      background: var(--el-bg-color);
-      border: 1px solid var(--el-border-color-light);
-      border-radius: 16px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-        border-color: rgba(0, 206, 122, 0.3);
-      }
-
-      &:active {
-        transform: scale(0.98);
-      }
-
-      .setting-label {
-        font-size: 15px;
-        font-weight: 500;
-        color: var(--text-color);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .slip-btn {
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--el-menu-active-color);
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-
-        svg {
-          width: 16px;
-          height: 16px;
-        }
-      }
-    }
-
-    .swap-main-btn {
-      width: 100%;
-      height: 56px; /* 统一主按钮高度 */
-      border: none;
-      border-radius: 16px;
-      background: var(--el-border-color-light);
-      color: var(--text-color);
-      font-size: 17px;
-      font-weight: 700;
-      cursor: not-allowed;
-      opacity: 0.6;
-      margin-top: 16px;
-      outline: none;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-
-      &:not([disabled]) {
-        background: linear-gradient(135deg, #00CE7A 0%, #00B865 100%);
-        color: white;
-        cursor: pointer;
-        opacity: 1;
-        box-shadow: 0 6px 20px rgba(0, 206, 122, 0.3);
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 8px 25px rgba(0, 206, 122, 0.4);
-        }
-
-        &:active {
-          transform: translateY(0) scale(0.98);
-        }
-      }
-
-      &:disabled {
-        cursor: not-allowed;
-        opacity: 0.6;
-      }
-    }
-  }
-}
-
-/* 小屏幕设备优化 - 保持比例协调 */
-@media (max-width: 480px) {
-  #container {
-    padding: 0 14px;
-
-    h1 {
-      font-size: 28px; /* 小幅缩小但保持可读性 */
-      margin-bottom: 24px;
-      letter-spacing: -0.3px;
-    }
-
-    .contents {
-      padding-top: 60px; /* 适当减少顶部间距 */
-    }
-  }
-
-  .swap-card {
-    padding: 20px 16px; /* 稍微减少内边距 */
-
-    .swap-row {
-      padding: 16px; /* 稍微减少行内边距 */
-      margin-bottom: 14px; /* 减少行间距 */
-
-      .swap-label {
-        font-size: 13px; /* 稍微缩小标签 */
         margin-bottom: 8px;
       }
 
       .swap-amount-row {
-        gap: 10px; /* 减少元素间距 */
-
         .swap-amount-input {
-          font-size: 24px; /* 适当缩小输入框字体 */
+          font-size: 28px;
+          width: 70%;
         }
 
         .swap-token-btn {
-          padding: 10px 14px;
-          min-height: 44px; /* 保持触摸目标 */
-
+          padding: 12px 14px;
+          min-height: 44px; // 确保触摸目标足够大
+          
           img {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
           }
 
           span {
@@ -1265,8 +1117,11 @@ input[type="number"] {
     }
 
     .swap-switch-row {
-      width: calc(100% - 32px);
-      top: 110px; /* 调整切换按钮位置 */
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      width: auto;
+      /* 移动端计算：swap-card padding: 20px + swap-row padding: 16px + 内容高度: ~120px + swap-row padding-bottom: 16px + margin的一半: 6px */
+      top: calc(20px + 16px + 120px + 16px + 6px);
 
       .swap-switch-btn {
         width: 44px;
@@ -1277,121 +1132,164 @@ input[type="number"] {
     }
 
     .swap-setting-row {
-      height: 50px; /* 稍微减少设置行高度 */
+      height: 44px;
       padding: 0 16px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
+      min-height: 44px; // 确保触摸目标足够大
 
       .setting-label {
         font-size: 14px;
       }
 
       .slip-btn {
-        font-size: 14px;
+        font-size: 13px;
+        min-height: 44px;
+        padding: 8px 0;
       }
     }
 
     .swap-main-btn {
-      height: 50px; /* 稍微减少主按钮高度 */
+      height: 48px;
       font-size: 16px;
-      margin-top: 14px;
+      min-height: 48px; // 确保触摸目标足够大
+      margin-top: 12px;
     }
   }
 }
 
-/* iPhone SE (375x667) 和类似小屏设备 - 精确适配 */
+@media (max-width: 480px) {
+  #container {
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .contents {
+      padding-top: 0;
+      padding: 50px 12px 20px;
+      justify-content: center;
+    }
+  }
+
+  .swap-card {
+    max-width: 92%;
+    width: 92%;
+    padding: 16px 12px;
+
+    .swap-row {
+      padding: 14px;
+
+      .swap-amount-row {
+        .swap-amount-input {
+          font-size: 24px;
+        }
+
+        .swap-token-btn {
+          padding: 10px 12px;
+        }
+      }
+    }
+
+    .swap-switch-row {
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      width: auto;
+      /* 小屏幕计算：swap-card padding: 16px + swap-row padding: 14px + 内容高度: ~110px + swap-row padding-bottom: 14px + margin的一半: 5px */
+      top: calc(16px + 14px + 110px + 14px + 5px);
+    }
+  }
+}
+
+/* iPhone SE (375x667) 和类似小屏设备 */
 @media only screen
   and (device-width: 375px)
   and (device-height: 667px)
   and (-webkit-device-pixel-ratio: 2) {
   #container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     h1 {
-      font-size: 26px; /* SE设备稍微调小但保持协调 */
-      margin-bottom: 20px;
-      letter-spacing: -0.2px;
+      font-size: 22px;
+      margin-bottom: 16px;
     }
 
     .contents {
-      padding-top: 50px; /* 适配SE的屏幕比例 */
+      padding-top: 0;
+      padding: 40px 10px 20px;
+      justify-content: center;
     }
   }
 
   .swap-card {
-    padding: 18px 14px; /* 为SE优化内边距 */
+    max-width: 92%;
+    width: 92%;
+    padding: 14px 10px;
 
     .swap-row {
-      padding: 14px; /* SE设备减少内边距 */
-      margin-bottom: 12px; /* 减少行间距 */
-
-      .swap-label {
-        font-size: 13px;
-        margin-bottom: 8px;
-        font-weight: 500;
-      }
+      padding: 12px;
+      margin-bottom: 10px;
 
       .swap-amount-row {
-        gap: 8px; /* SE设备减少间距 */
-
         .swap-amount-input {
-          font-size: 22px; /* SE设备输入框字体稍小 */
-          font-weight: 600;
+          font-size: 22px;
+          width: 65%;
         }
 
         .swap-token-btn {
-          padding: 10px 12px;
-          min-height: 40px; /* SE设备按钮稍小但保持可用性 */
-          border-radius: 10px;
+          padding: 8px 10px;
+          font-size: 13px;
 
           img {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
           }
 
           span {
             font-size: 13px;
-            font-weight: 500;
           }
         }
       }
 
       .swap-balance {
-        font-size: 12px;
+        font-size: 11px;
         margin-top: 6px;
       }
     }
 
     .swap-switch-row {
-      top: 100px; /* 适配SE的布局 */
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      width: auto;
+      /* iPhone SE计算：swap-card padding: 14px + swap-row padding: 12px + 内容高度: ~100px + swap-row padding-bottom: 12px + margin的一半: 5px */
+      top: calc(14px + 12px + 100px + 12px + 5px);
 
       .swap-switch-btn {
-        width: 42px;
-        height: 42px;
-        min-width: 42px;
-        min-height: 42px;
+        width: 40px;
+        height: 40px;
       }
     }
 
     .swap-setting-row {
-      height: 48px; /* SE设备设置行稍小 */
+      height: 40px;
       padding: 0 14px;
-      margin-bottom: 12px;
-      border-radius: 14px;
+      margin-bottom: 10px;
 
       .setting-label {
-        font-size: 14px;
-        font-weight: 500;
-      }
-
-      .slip-btn {
-        font-size: 14px;
-        font-weight: 600;
+        font-size: 13px;
       }
     }
 
     .swap-main-btn {
-      height: 48px; /* SE设备主按钮适中大小 */
-      font-size: 16px;
-      margin-top: 12px;
-      border-radius: 14px;
+      height: 44px;
+      font-size: 15px;
+      margin-top: 10px;
     }
   }
 }
@@ -1402,17 +1300,25 @@ input[type="number"] {
   and (device-height: 812px)
   and (-webkit-device-pixel-ratio: 3) {
   #container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     h1 {
       font-size: 26px;
       margin-bottom: 20px;
     }
 
     .contents {
-      padding-top: 50px;
+      padding-top: 0;
+      padding: 50px 14px 20px;
+      justify-content: center;
     }
   }
 
   .swap-card {
+    max-width: 90%;
+    width: 90%;
     padding: 18px 14px;
 
     .swap-row {
@@ -1442,7 +1348,11 @@ input[type="number"] {
     }
 
     .swap-switch-row {
-      top: 110px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      width: auto;
+      /* iPhone X/12 mini计算：swap-card padding: 18px + swap-row padding: 16px + 内容高度: ~120px + swap-row padding-bottom: 16px + margin的一半: 6px */
+      top: calc(18px + 16px + 120px + 16px + 6px);
 
       .swap-switch-btn {
         width: 46px;
@@ -1464,17 +1374,25 @@ input[type="number"] {
   and (device-height: 844px)
   and (-webkit-device-pixel-ratio: 3) {
   #container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     h1 {
       font-size: 28px;
       margin-bottom: 24px;
     }
 
     .contents {
-      padding-top: 55px;
+      padding-top: 0;
+      padding: 55px 16px 20px;
+      justify-content: center;
     }
   }
 
   .swap-card {
+    max-width: 90%;
+    width: 90%;
     padding: 20px 16px;
 
     .swap-row {
@@ -1504,7 +1422,11 @@ input[type="number"] {
     }
 
     .swap-switch-row {
-      top: 118px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      width: auto;
+      /* iPhone 12/13/14计算：swap-card padding: 20px + swap-row padding: 18px + 内容高度: ~130px + swap-row padding-bottom: 18px + margin的一半: 7px */
+      top: calc(20px + 18px + 130px + 18px + 7px);
 
       .swap-switch-btn {
         width: 48px;
@@ -1526,17 +1448,25 @@ input[type="number"] {
   and (device-height: 852px)
   and (-webkit-device-pixel-ratio: 3) {
   #container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     h1 {
       font-size: 28px;
       margin-bottom: 24px;
     }
 
     .contents {
-      padding-top: 55px;
+      padding-top: 0;
+      padding: 55px 16px 20px;
+      justify-content: center;
     }
   }
 
   .swap-card {
+    max-width: 90%;
+    width: 90%;
     padding: 20px 16px;
 
     .swap-row {
@@ -1566,7 +1496,11 @@ input[type="number"] {
     }
 
     .swap-switch-row {
-      top: 118px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      width: auto;
+      /* iPhone 12/13/14计算：swap-card padding: 20px + swap-row padding: 18px + 内容高度: ~130px + swap-row padding-bottom: 18px + margin的一半: 7px */
+      top: calc(20px + 18px + 130px + 18px + 7px);
 
       .swap-switch-btn {
         width: 48px;
@@ -1588,18 +1522,25 @@ input[type="number"] {
   and (max-device-width: 430px)
   and (-webkit-device-pixel-ratio: 3) {
   #container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     h1 {
       font-size: 30px;
       margin-bottom: 26px;
     }
 
     .contents {
-      padding-top: 60px;
+      padding-top: 0;
+      padding: 60px 18px 20px;
+      justify-content: center;
     }
   }
 
   .swap-card {
-    max-width: 400px;
+    max-width: 88%;
+    width: 88%;
     padding: 22px 18px;
 
     .swap-row {
@@ -1629,7 +1570,11 @@ input[type="number"] {
     }
 
     .swap-switch-row {
-      top: 125px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      width: auto;
+      /* iPhone Plus/Pro Max计算：swap-card padding: 22px + swap-row padding: 20px + 内容高度: ~140px + swap-row padding-bottom: 20px + margin的一半: 8px */
+      top: calc(22px + 20px + 140px + 20px + 8px);
 
       .swap-switch-btn {
         width: 50px;

@@ -167,16 +167,11 @@ function getIcon(icon) {
         user-select: none;
         line-height: 1;
     }
-    /* 移动端模态框优化 - 统一比例系统 */
     @media screen and (max-width: 768px) {
         .modal-header {
-            font-size: 20px; /* 统一标题字体 */
-            font-weight: 600;
-            padding: 20px 20px 16px 20px; /* 统一内边距 */
-            border-bottom: 1px solid var(--el-border-color-light);
-            margin-bottom: 0;
+            font-size: 18px;
+            padding: 16px 20px;
         }
-
         .modal-content {
             top: auto;
             bottom: 0;
@@ -185,34 +180,22 @@ function getIcon(icon) {
             transform: none;
             max-width: 100%;
             width: 100%;
-            height: 75vh; /* 稍微增加高度 */
-            max-height: 650px; /* 增加最大高度 */
-            padding: 0; /* 移除默认内边距，由内部元素控制 */
-            border-radius: 24px 24px 0 0; /* 更大的圆角 */
-            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 更平滑的动画 */
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15); /* 更强的阴影 */
+            height: 70vh;
+            max-height: 600px;
+            padding: 16px;
+            border-radius: 20px 20px 0 0;
+            animation: slideUp 0.25s ease-out;
         }
-
         .modal-close {
             font-size: 24px;
             cursor: pointer;
             user-select: none;
             line-height: 1;
-            min-width: 48px; /* 稍微增大的触摸目标 */
-            min-height: 48px;
+            min-width: 44px;
+            min-height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-
-            &:hover {
-                background: rgba(0, 0, 0, 0.05);
-            }
-
-            &:active {
-                transform: scale(0.9);
-            }
         }
         @keyframes slideUp {
             from {
@@ -225,76 +208,33 @@ function getIcon(icon) {
         }
         
         .search-box {
-            margin-bottom: 20px;
-            padding: 0 20px;
-
+            margin-bottom: 16px;
+            
             input {
                 font-size: 16px;
-                padding: 16px 20px; /* 增加内边距 */
-                min-height: 52px; /* 统一高度 */
-                border-radius: 16px; /* 更大的圆角 */
-                border: 2px solid var(--el-border-color-light);
-                background: var(--el-bg-color);
-                transition: all 0.2s ease;
-
-                &:focus {
-                    border-color: var(--el-menu-active-color);
-                    box-shadow: 0 0 0 3px rgba(0, 206, 122, 0.1);
-                }
+                padding: 12px 16px;
+                min-height: 44px;
             }
         }
-
+        
         .token-list {
-            padding: 0 20px 20px 20px;
-
             .token-item {
-                padding: 16px 20px; /* 统一内边距 */
-                min-height: 72px; /* 增加高度 */
-                border-radius: 16px; /* 更大的圆角 */
-                margin-bottom: 8px; /* 减少间距 */
-                border: 1px solid var(--el-border-color-light);
-                background: var(--el-bg-color);
-                transition: all 0.2s ease;
-
-                &:hover {
-                    border-color: rgba(0, 206, 122, 0.3);
-                    background: rgba(0, 206, 122, 0.02);
-                    transform: translateY(-1px);
-                }
-
-                &:active {
-                    transform: translateY(0) scale(0.98);
-                }
-
+                padding: 14px 16px;
+                min-height: 64px;
+                
                 .token-info {
-                    flex: 1;
-
+                    .token-name {
+                        font-size: 15px;
+                    }
+                    
                     .token-symbol {
-                        font-size: 16px; /* 增大字体 */
-                        font-weight: 600;
-                        margin-bottom: 4px;
-                        color: var(--text-color);
-                    }
-
-                    .token-address {
-                        font-size: 12px;
-                        color: rgba(0, 0, 0, 0.5);
-                        font-family: 'Monaco', 'Menlo', monospace;
+                        font-size: 13px;
                     }
                 }
-
-                .token-balance {
-                    font-size: 14px;
-                    font-weight: 500;
-                    color: var(--text-color);
-                    text-align: right;
-                }
-
+                
                 img {
-                    width: 44px; /* 稍微增大的图标 */
-                    height: 44px;
-                    border-radius: 50%;
-                    flex-shrink: 0;
+                    width: 40px;
+                    height: 40px;
                 }
             }
         }

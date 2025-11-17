@@ -64,11 +64,17 @@ import  navBar  from "./components/navBar.vue"
   /* 内容区域适配 */
   :global(.contents) {
     /* 确保内容不会被导航栏遮挡 */
-    padding-top: 80px; /* 根据导航栏高度调整 */
+    /* 使用flex布局居中，padding-top在具体组件中设置 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
 
     /* iOS Safari 安全区域适配 */
     @supports (padding: max(0px)) {
-      padding-top: calc(80px + env(safe-area-inset-top));
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
   }
 }
@@ -76,10 +82,16 @@ import  navBar  from "./components/navBar.vue"
 /* 小屏幕设备优化 */
 @media (max-width: 480px) {
   :global(.contents) {
-    padding-top: 70px;
+    /* 使用flex布局居中 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
 
     @supports (padding: max(0px)) {
-      padding-top: calc(70px + env(safe-area-inset-top));
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
   }
 }

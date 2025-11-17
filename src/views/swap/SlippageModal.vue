@@ -204,88 +204,56 @@ function confirm() {
   }
 }
 
-/* 移动端SlippageModal优化 - 统一比例系统 */
 @media (max-width: 768px) {
   .modal-mask {
     padding: 0;
     align-items: flex-end;
-
+    
     .modal-box {
       width: 100%;
       max-width: 100%;
-      border-radius: 24px 24px 0 0; /* 更大的圆角 */
+      border-radius: 20px 20px 0 0;
       margin: 0;
-      padding: 24px 20px 20px; /* 统一的内边距 */
+      padding: 20px 16px 16px;
       min-width: auto;
-      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15); /* 更强的阴影 */
-
+      
       .modal-title {
-        font-size: 18px; /* 稍微调大标题 */
-        font-weight: 600;
-        margin-bottom: 20px; /* 增加间距 */
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        span:first-child {
-          flex: 1;
-          text-align: center;
-          margin-right: -44px; /* 抵消关闭按钮宽度 */
-        }
-
+        font-size: 16px;
+        margin-bottom: 16px;
+        
         .close-btn {
           font-size: 24px;
-          min-width: 48px; /* 稍微增大的触摸目标 */
-          min-height: 48px;
+          min-width: 44px;
+          min-height: 44px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 12px;
-          transition: all 0.2s ease;
-
-          &:hover {
-            background: rgba(0, 0, 0, 0.05);
-          }
-
-          &:active {
-            transform: scale(0.9);
-          }
         }
       }
-
+      
       .modal-content {
-        padding: 0;
-        margin-bottom: 16px; /* 增加间距 */
-
+        padding: 0 12px;
+        margin-bottom: 8px;
+        
         .modal-input {
-          font-size: 18px; /* 调大输入框字体 */
-          padding: 16px 0; /* 增加内边距 */
-          font-weight: 500;
-          text-align: center;
-        }
-
-        .modal-percent {
           font-size: 16px;
-          font-weight: 500;
-          color: var(--el-menu-active-color);
+          padding: 14px 0;
+        }
+        
+        .modal-percent {
+          font-size: 14px;
         }
       }
-
+      
       .modal-warn {
-        font-size: 13px; /* 稍微调大警告文字 */
-        padding: 8px 0 12px 0; /* 增加内边距 */
-        text-align: center;
-        color: #ff6b6b;
-        font-weight: 500;
+        font-size: 12px;
+        padding: 4px 0 8px 0;
       }
-
+      
       .modal-confirm {
-        height: 52px; /* 统一按钮高度 */
+        height: 48px;
         font-size: 16px;
-        font-weight: 600;
-        margin-top: 12px;
-        border-radius: 16px; /* 更大的圆角 */
-        box-shadow: 0 4px 16px rgba(0, 206, 122, 0.2);
+        margin-top: 8px;
       }
     }
   }

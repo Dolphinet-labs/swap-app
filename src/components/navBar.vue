@@ -1157,22 +1157,20 @@ a {
     }
 
     .content {
-      height: 56px; /* 统一导航栏高度 */
+      height: 48px;
       width: calc(100% - 16px);
       padding: 0 8px;
       backdrop-filter: blur(14px);
-      border-radius: 16px;
-      margin: 8px;
 
       .gridContent {
-        height: 56px; /* 统一高度 */
+        height: 48px;
         display: flex;
         align-items: center;
         width: 100%;
         padding-left: 12px;
 
         img {
-          height: 48px; /* 适配导航栏高度 */
+          height: 56px;
           margin-left: 4px;
           margin-top: 4px;
           filter: brightness(0) saturate(100%) invert(27%) sepia(93%) saturate(1352%) hue-rotate(195deg) brightness(100%) contrast(100%);
@@ -1180,7 +1178,7 @@ a {
       }
 
       .gridContent2 {
-        height: 56px; /* 统一高度 */
+        height: 48px;
         display: flex;
         align-items: center;
         justify-content: flex-end;
@@ -1195,32 +1193,27 @@ a {
             margin-top: 0;
             cursor: pointer;
             display: flex;
-            height: 40px; /* 统一按钮高度 */
-            min-height: 44px;
-            padding: 0px 16px;
+            height: 36px;
+            min-height: 44px; /* iOS 最小触摸目标 */
+            padding: 0px 14px;
             justify-content: center;
             align-items: center;
             gap: 8px;
-            border-radius: 12px;
+            border-radius: 100px;
             border: 1px solid #0066cc;
             color: #0066cc;
-            font-size: 15px; /* 稍微调大字体 */
+            font-size: 14px;
             font-weight: 500;
             background: transparent;
-            transition: all 0.2s ease;
 
             /* iOS 触摸优化 */
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
             user-select: none;
-
-            &:hover {
-              background: rgba(0, 102, 204, 0.1);
-              transform: translateY(-1px);
-            }
+            transition: transform 0.1s ease, opacity 0.2s ease;
 
             &:active {
-              transform: scale(0.98) translateY(0);
+              transform: scale(0.95);
             }
           }
 
@@ -1243,30 +1236,27 @@ a {
             margin-top: 0 !important;
             cursor: pointer;
             display: flex;
-            height: 40px; /* 统一按钮高度 */
-            min-height: 44px;
+            height: 36px;
+            min-height: 36px;
             justify-content: center;
             align-items: center;
             width: auto;
             min-width: 90px;
-            padding: 0 14px;
-            border-radius: 12px;
+            padding: 0 12px;
+            border-radius: 100px;
             border: 1px solid #0066cc;
             color: #0066cc;
             font-family: "PingFang SC", sans-serif;
-            font-size: 14px; /* 稍微调大字体 */
+            font-size: 13px;
             font-weight: 500;
             background: transparent;
-            transition: all 0.2s ease;
+          }
 
-            &:hover {
-              background: rgba(0, 102, 204, 0.1);
-              transform: translateY(-1px);
-            }
-
-            &:active {
-              transform: scale(0.98) translateY(0);
-            }
+          button:hover {
+            cursor: pointer;
+            border: 1px solid #0066cc;
+            color: #0066cc;
+            background: rgba(0, 102, 204, 0.1);
           }
 
           :deep(.el-icon:hover) {
