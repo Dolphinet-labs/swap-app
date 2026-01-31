@@ -6,32 +6,36 @@ import { Contract, parseUnits, formatUnits } from 'ethers'
 import { getCreate2Address } from '@ethersproject/address'
 import { keccak256, pack } from '@ethersproject/solidity'
 
-const FACTORY_ADDRESS = '0x2FC7B621aB51108e3108dD0EbCE76cb05545743a'
-const INIT_CODE_HASH = '0x5a2dc30108940dd053e5fe06fe4deb55d420828f787d508920ac29e08aed3ad9'
+const FACTORY_ADDRESS = '0xf0D5b329e7A43dC014d46B79cd99b82EB26fbC37'
+const INIT_CODE_HASH = '0xcaa2da3f024b3624669464e0d7cb4cd3ce62345cc347579fc16aecc3b020c722'
 
-
-// ✅ Token 列表（支持 DOL 原生币和 ERC20）
+// ✅ Token 列表（原生币是 DOL）
 const TOKEN_LIST = {
-  "DOL": {
+  DOL: {
     symbol: 'DOL',
     decimals: 18,
     address: '',
     isNative: true,
     chainId: 1520
   },
-  "JF": new Token(1520, '0xeC8352D242Cb1236c7d2eE0F234EeBb907BDd2bA', 18, 'JF', 'Jellyfish'),
-  "WCP": new Token(1520, '0xCF4825F0dCaEAa158310473C1FFF1980Acb5b9F7', 18, 'WCP', 'Wrapped CP'),
-  "DOLUSDT": new Token(1520, '0xC10F6186Bb3C9E68516D0e2F829f1b95C323d542', 18, 'DOLUSDT', 'Dolphinet DOLUSDT'),
-  "DOLUSDC": new Token(1520, '0xc916dc0d98Bb425dFb300b9f90c7097581862642', 18, 'DOLUSDC', 'Dolphinet DOLUSDC')
+  CP: { // 别名，指向 DOL
+    symbol: 'DOL',
+    decimals: 18,
+    address: '',
+    isNative: true,
+    chainId: 1520
+  },
+  USDT: new Token(1520, '0xF61C878b8116358BCfC5b6b45275035a658017Fa', 6, 'USDT', 'Tether USD'),
+  USDOL: new Token(1520, '0xE1B7bEE68E1803A3Ba13E75dE1dEC117e4654500', 6, 'USDOL', 'USDOL'),
+  WDOL: new Token(1520, '0xFEde7dF3dfdaaBeC24B0B41aEC75500A35C201fA', 18, 'WDOL', 'Wrapped DOL')
 }
 
-// ✅ 获取 SDK Token 实例
+// ✅ 获取 SDK Token 实例（DOL 原生币转换为 WDOL 用于计算）
 function getSdkToken(symbol) {
   const token = TOKEN_LIST[symbol]
   if (!token) throw new Error(`Token ${symbol} not found`)
-  return token.isNative ? TOKEN_LIST.WCP : token
+  return token.isNative ? TOKEN_LIST.WDOL : token
 }
-
 // ✅ 计算 pair 地址（适配自定义工厂）
 function getPairAddress({ tokenA, tokenB }) {
   const [token0, token1] = tokenA.sortsBefore(tokenB)
@@ -150,5 +154,7 @@ export {
   TOKEN_LIST,
   getSdkToken,
   getPairAddress,
-  isPairAvailable
+  isPairAvailable,
+  FACTORY_ADDRESS,
+  INIT_CODE_HASH
 }

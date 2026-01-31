@@ -1,31 +1,30 @@
 import { http, createConfig, createStorage } from '@wagmi/vue'
-import {  walletConnect ,metaMask,injected} from '@wagmi/vue/connectors'
+import {  walletConnect ,injected} from '@wagmi/vue/connectors'
 import { defineChain } from 'viem'
 
-const cpChain = defineChain({
-  id: 86608,
+const dolphinet = defineChain({
+  id: 1520,
   name: 'Dolphinet',
   nativeCurrency: {
     name: 'Dolphinet',
-    symbol: 'CP', // ✅ 关键：正确的 symbol
+    symbol: 'DOL',
     decimals: 18,
   },
   rpcUrls: {
     default: {
-      http: ['https://rpc.cpchain.com'],
+      http: ['https://rpc.dolphinode.world'],
     },
   },
   blockExplorers: {
     default: {
       name: 'Dolphinet Explorer',
-      url: 'https://explorer.cpchain.com',
+      url: 'https://explorer.dolphinode.world',
     },
   },
-  testnet: false,
 })
 export const config = createConfig({
   // chains: [mainnet, sepolia, optimism],
-  chains:[cpChain],
+  chains:[dolphinet],
   connectors: [
    injected({shimDisconnect: true}),
     walletConnect({
@@ -39,7 +38,7 @@ export const config = createConfig({
   ],
   storage: createStorage({ storage: localStorage, key: 'vite-vue' }),
   transports: {
-    [cpChain.id]: http('https://rpc.cpchain.com')
+     [dolphinet.id]: http('https://rpc.dolphinode.world'),
     // [mainnet.id]: http(),
     // [sepolia.id]: http(),
     // [optimism.id]: http(),

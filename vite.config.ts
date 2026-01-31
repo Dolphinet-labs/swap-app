@@ -10,7 +10,6 @@ export default defineConfig({
     port: 3000,      // 配置服务器监听端口
     open: true,      // 自动打开浏览器
     allowedHosts: [
-      'swap.cpchain.com',
       'swap-testnet.cpchain.com', // 添加你要允许的 host
     ],
   },

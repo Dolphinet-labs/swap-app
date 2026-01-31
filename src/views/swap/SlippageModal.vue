@@ -15,7 +15,7 @@
           @keydown.stop
           @keypress="onKeyPress"
           @paste.prevent
-          placeholder=" slippage (0.000001~50)"
+          :placeholder="$t('swap.slippagePlaceholder')"
           autocomplete="off"
         />
         <span class="modal-percent">%</span>
@@ -70,7 +70,7 @@ function handleInput(e) {
   displayValue.value = val
 
   if (val && parseFloat(val) > MAX) {
-    warn.value = `Maximum allowed is ${MAX}%`
+    warn.value = `${t('swap.maximumAllowedEn')} ${MAX}%`
     displayValue.value = String(MAX)
   }
 }
@@ -83,10 +83,10 @@ function onBlur() {
   }
   let num = Number(val)
   if (num < MIN) {
-    warn.value = `Minimum allowed is ${MIN}%`
+    warn.value = `${t('swap.minimumAllowedEn')} ${MIN}%`
     num = MIN
   } else if (num > MAX) {
-    warn.value = `Maximum allowed is ${MAX}%`
+    warn.value = `${t('swap.maximumAllowedEn')} ${MAX}%`
     num = MAX
   }
   displayValue.value = String(Number(num.toFixed(6)))
@@ -102,17 +102,17 @@ function onKeyPress(e) {
 function confirm() {
   let val = displayValue.value
   if (val === '' || isNaN(Number(val))) {
-    warn.value = '请输入有效数字'
+    warn.value = t('swap.invalidNumber')
     displayValue.value = String(MIN)
     return
   }
   let num = Number(val)
   if (num < MIN) {
-    warn.value = `最小为 ${MIN}%`
+    warn.value = `${t('swap.minimumAllowed')} ${MIN}%`
     num = MIN
   }
   if (num > MAX) {
-    warn.value = `最大只能为 ${MAX}%`
+    warn.value = `${t('swap.maximumAllowed')} ${MAX}%`
     num = MAX
   }
   num = Number(num.toFixed(6))
@@ -133,7 +133,7 @@ function confirm() {
   align-items: center;
   justify-content: center;
   .modal-box {
-    background: var(--el-menu-bg-color);
+    background: #151517;
     border-radius: 16px;
     min-width: 260px;
     min-height: 130px;
@@ -146,7 +146,7 @@ function confirm() {
       justify-content: space-between;
       align-items: center;
       font-size: 15px;
-      color: var(--text-color);
+      color: #fff;
       margin-bottom: 18px;
       .close-btn {
         font-size: 20px;
@@ -159,7 +159,7 @@ function confirm() {
       display: flex;
       align-items: center;
       margin-bottom: 10px;
-      background: var(--el-bg-color);
+      background: #101012;
       border-radius: 8px;
       padding: 0 10px;
       border: 1px solid #222;
@@ -167,7 +167,7 @@ function confirm() {
         flex: 1;
         background: transparent;
         border: none;
-        color: var(--text-color);
+        color: #fff;
         font-size: 18px;
         outline: none;
         padding: 12px 0;
@@ -191,70 +191,14 @@ function confirm() {
       border-radius: 999px;
       border: none;
       height: 38px;
-      background: var(--el-menu-active-color);
-      color: var(--el-menu-bg-color);
+      background: #14e18d;
+      color: #111;
       font-weight: bold;
       font-size: 16px;
       margin-top: 2px;
       cursor: pointer;
       transition: background 0.2s;
-      min-height: 44px; // 确保触摸目标足够大
-      &:hover { background: var(--el-menu-active-color); }
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .modal-mask {
-    padding: 0;
-    align-items: flex-end;
-    
-    .modal-box {
-      width: 100%;
-      max-width: 100%;
-      border-radius: 20px 20px 0 0;
-      margin: 0;
-      padding: 20px 16px 16px;
-      min-width: auto;
-      
-      .modal-title {
-        font-size: 16px;
-        margin-bottom: 16px;
-        
-        .close-btn {
-          font-size: 24px;
-          min-width: 44px;
-          min-height: 44px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-      }
-      
-      .modal-content {
-        padding: 0 12px;
-        margin-bottom: 8px;
-        
-        .modal-input {
-          font-size: 16px;
-          padding: 14px 0;
-        }
-        
-        .modal-percent {
-          font-size: 14px;
-        }
-      }
-      
-      .modal-warn {
-        font-size: 12px;
-        padding: 4px 0 8px 0;
-      }
-      
-      .modal-confirm {
-        height: 48px;
-        font-size: 16px;
-        margin-top: 8px;
-      }
+      &:hover { background: #00ce7a; }
     }
   }
 }

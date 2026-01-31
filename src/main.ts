@@ -16,12 +16,6 @@ import Vue3Marquee from 'vue3-marquee'
 import App from './App.vue'
 // import './style.css'
 import { config } from './wagmi'
-import './utils/touchEvents.js'
-import './utils/mobileInput.js'
-import './utils/touchInteractions.js'
-import './utils/mobileModal.js'
-import './utils/mobileAssets.js'
-import './utils/mobilePerformance.js'
 
 // import "./utils/font.js"
 

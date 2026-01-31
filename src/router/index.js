@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 
 import   swap   from "../views/swap/index.vue"
+import   Liquidity  from "../views/Liquidity/index.vue"
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -10,6 +11,11 @@ const router = createRouter({
       path: '/',
       name: 'swap',
       component: swap,
+    },
+    {
+      path: '/Liquidity',
+      name: 'Liquidity',
+      component: Liquidity,
     },
 
   ],

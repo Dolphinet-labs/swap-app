@@ -13,7 +13,8 @@
           <div class="swap-label">{{ $t('swap.sell') }}</div>
           <div class="swap-amount-row">
 
-            <input type="text" inputmode="decimal" v-model="amountIn" class="swap-amount-input" placeholder="0.00" />
+            <input type="number" v-model="amountIn" class="swap-amount-input" placeholder="0.00" :disabled="!address"
+              @input="validateAndCorrectAmount" @blur="validateAndCorrectAmount" />
             <div class="swap-token-btn" @click="selIcon(1, fromSymbol)">
               <img :src="fromIcon" alt="">
               <span>{{ fromSymbol }}</span>
@@ -94,24 +95,19 @@
           </span>
 
         </div>
-        <button class="swap-main-btn" @click="sure()"
-          :disabled="isprocess || doSwapprohibitSwap || (amountIn == '') || isestimateQuote || (amountIn >= fromBalance)">
+        <button class="swap-main-btn" v-if="status !== 'connected'" @click="connectWalleted()">
+          {{ $t('swap.connectWallet') }}
+        </button>
+
+        <button class="swap-main-btn" v-else @click="sure()"
+        :disabled="isprocess || doSwapprohibitSwap || !amountIn || isestimateQuote">
           <img src="./loading.svg" alt="" style="width: 30px;
             animation: rotate 5s linear infinite;" v-if="isprocess">
           <span v-else>
             {{ disableReason || $t('swap.doswaps') }}
           </span>
-
-
         </button>
-        <!-- <div style="text-align:left;color:rgb(56, 232, 153);font-size:14px;margin:8px 0;">
-          {{ $t('swap.rate') }}: 1 {{ fromSymbol }} ≈
-          <img src="./loading.svg" alt="" style="width: 25px;
-            animation: rotate 5s linear infinite;" v-if="tofromprocess">
-          <span v-else> {{ rate }}</span>
-          {{ toSymbol }}
 
-        </div> -->
       </div>
     </div>
     <!-- 选择币种弹框 -->
@@ -127,19 +123,23 @@
 import ethIcon from '@/assets/coin/eth.png'
 import daiIcon from '@/assets/coin/dai.png'
 import usdtIcon from '@/assets/coin/usdt.png'
-import usdcIcon from '@/assets/coin/usdc.svg'
-import cpIcon from "@/assets/coin/cp.svg"
-import jfIcon from "@/assets/coin/jf.jpg"
-import { ElMessage } from 'element-plus'
+import usdcIcon from '@/assets/coin/usdol.png'
+import cpIcon from "@/assets/coin/Dolphinet.png"
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { getWalletClient } from '@wagmi/core'
-import { readContract,estimateFeesPerGas } from '@wagmi/core'
+// import { getWalletClient } from '@wagmi/core'
+import { readContract, estimateFeesPerGas } from '@wagmi/core'
 import { config } from '../../wagmi.ts'
 const { t } = useI18n()
 
+import { useCounterStore } from '@/stores/counter'
+import { storeToRefs } from 'pinia'
 
+// 拿到 store
+const counterStore = useCounterStore()
+const { visible, isLogin } = storeToRefs(counterStore)
 import {
-  useChainId, useConnect, useDisconnect, useAccount, 
+  useChainId, useConnect, useDisconnect, useAccount,
   useWriteContract,
   useReadContract,
   useWaitForTransactionReceipt
@@ -187,12 +187,12 @@ watch(txSuccess, async (success) => {
     console.log('✅ 交易已确认，刷新余额')
     await fetchAllBalancesV6(provider, userAddress.value, allAcconts.value)
     amountIn.value = ''
-  amountOut.value = ''
-  eventBus.emit('custom-event', '发送的数据')
-    ElMessage.success(' Swap succes！')
+    amountOut.value = ''
+    eventBus.emit('custom-event', '发送的数据')
+    ElMessage.success(t('swap.messages.swapSuccess'))
     transactionHash.value = null // 重置状态
     isprocess.value = false
-  }else{
+  } else {
     isprocess.value = false
   }
 })
@@ -210,25 +210,27 @@ const { connect, connectors, error } = useConnect();
 const { address, status } = useAccount()
 import { eventBus } from '../../utils/eventBus'
 
+import VConsole from 'vconsole';
+const vConsole = new VConsole();
 // const { connector } = useAccount()
 // console.log(connector)
 
 console.log(status)
 import TokenModal from './tokenSelect.vue'
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import SlippageModal from "./SlippageModal.vue"
 import { BrowserProvider, Contract, parseUnits, formatUnits, MaxUint256, JsonRpcProvider } from 'ethers'
 import { estimateQuotes, getPoolReserves, TOKEN_LIST } from './uniswapQuote'
 import { doSwaps } from "./doSwap.js"
 import { computed } from 'vue'
 let provider, signer
-let fromSymbol = ref('CPUSDT')
-let toSymbol = ref("CPUSDC")
-const routerAddress = '0x232F7E1486eC0B54eBA4FCdd08F0B8Cf4247f0D3'
-const wethAddress = '0xCF4825F0dCaEAa158310473C1FFF1980Acb5b9F7'
+const routerAddress = '0x84D95e5d767d10841387fba50B94534ffB5aeFab'
+const wethAddress = '0xFEde7dF3dfdaaBeC24B0B41aEC75500A35C201fA'
 const userAddress = ref('')
 const connected = ref(false)
 const tokenModalVisible = ref(false)
+let fromSymbol = ref('DOL')
+let toSymbol = ref("USDT")
 const rate = ref("")
 const isprocess = ref(false)
 const isfromprocess = ref(false)
@@ -239,17 +241,48 @@ const minReceive = ref()
 const trade = ref(null)
 const prohibitReason = ref('')
 const prohibitSwap = computed(() => prohibitReason.value !== '')
+const messages = computed(() => ({
+  approvalSubmitted: t('swap.messages.approvalSubmitted'),
+  userReject: t('swap.messages.userReject'),
+  insufficientFunds: t('swap.messages.insufficientFunds'),
+  slippageTooHigh: t('swap.messages.slippageTooHigh'),
+  swapFail: t('swap.messages.swapFail'),
+
+  // 错误消息
+  userCancelledAuth: t('swap.messages.userCancelledAuth'),
+  userCancelledTransaction: t('swap.messages.userCancelledTransaction'),
+  insufficientBalance: t('swap.messages.insufficientBalance'),
+  slippageError: t('swap.messages.slippageError'),
+  swapFailed: t('swap.messages.swapFailed'),
+  transactionSuccess: t('swap.messages.transactionSuccess'),
+
+  // 错误类型
+  tokenUndefined: t('swap.messages.tokenUndefined'),
+  noValidTrade: t('swap.messages.noValidTrade'),
+  tokenNotDefined: t('swap.messages.tokenNotDefined'),
+  incompleteParams: t('swap.messages.incompleteParams'),
+  invalidSlippage: t('swap.messages.invalidSlippage'),
+  slippageTooLow: t('swap.messages.slippageTooLow'),
+  sameTokenSwap: t('swap.messages.sameTokenSwap'),
+  allowanceError: t('swap.messages.allowanceError')
+}))
+
+
 
 const disableReason = computed(() => {
+  // 首先检查是否是禁止的交易对
+  if (isProhibitedPair.value) {
+    return t('swap.usdtUsdolProhibited') || 'USDT 和 USDOL 之间不允许互换'
+  }
+  
   const balance = parseFloat(fromBalance.value)
   const inputAmount = parseFloat(amountIn.value)
 
   if (balance <= 0) return t('swap.nofund')
-  if (inputAmount >= balance) {
-    console.log(11)
-    return t('swap.nofund')
-  }
-  // if(amountIn.value=='') return 1
+  if (!amountIn.value || amountIn.value === '') return '' // 空值时不显示错误
+  if (isNaN(inputAmount) || inputAmount <= 0) return '请输入有效金额'
+  if (inputAmount > balance) return t('swap.nofund')
+  
   return ''
 })
 function trimTrailingZeros(valueStr) {
@@ -282,7 +315,54 @@ const fromIcon = computed(() => {
   const acc = allAcconts.value.find(a => a.symbol === fromSymbol.value)
   return acc ? getIconUrl(acc.icon) : ''
 })
+// 验证和修正输入金额
+function validateAndCorrectAmount() {
+  if (!amountIn.value) return
+
+  let value = amountIn.value.toString()
+
+  // 移除非数字字符（除了小数点）
+  value = value.replace(/[^0-9.]/g, '')
+
+  // 确保只有一个小数点（保留第一个，移除后续的）
+  const parts = value.split('.')
+  if (parts.length > 2) {
+    value = parts[0] + '.' + parts[1]
+  }
+
+  // 修复：更精确的前导零处理
+  // 只处理类似 "000123" 或 "01" 这样的情况，但保留 "0.xxx" 格式
+  if (value.match(/^0+[1-9]/)) {
+    // 移除多余的前导零，但保留一个0（如果后面跟着小数点）
+    value = value.replace(/^0+/, '')
+  } else if (value.match(/^0{2,}$/)) {
+    // 多个零的情况，只保留一个
+    value = '0'
+  }
+
+  // 限制小数位数为8位
+  if (value.includes('.')) {
+    const [integer, decimal] = value.split('.')
+    if (decimal && decimal.length > 8) {
+      value = integer + '.' + decimal.substring(0, 8)
+    }
+  }
+
+  // 确保不是负数（这个检查实际上不需要，因为我们已经过滤了非数字字符）
+  if (value && !isNaN(parseFloat(value))) {
+    const numValue = parseFloat(value)
+    if (numValue < 0) {
+      value = '0'
+    }
+  }
+
+  // 如果值发生了变化，更新 amountIn
+  if (value !== amountIn.value) {
+    amountIn.value = value
+  }
+}
 function handleSelect(token) {
+
   const selectedSymbol = token.symbol
   const state = current.value
 
@@ -292,8 +372,17 @@ function handleSelect(token) {
       const temp = fromSymbol.value
       fromSymbol.value = toSymbol.value
       toSymbol.value = temp
+      
+      // 检查交换后是否是禁止的交易对
+      checkProhibitedPair(fromSymbol.value, toSymbol.value)
       return
     }
+    
+    // 检查是否会形成禁止的交易对
+    if (checkProhibitedPair(selectedSymbol, toSymbol.value)) {
+      return // 如果是禁止的交易对，不进行选择
+    }
+    
     fromSymbol.value = selectedSymbol
   }
 
@@ -303,17 +392,35 @@ function handleSelect(token) {
       const temp = fromSymbol.value
       fromSymbol.value = toSymbol.value
       toSymbol.value = temp
+      
+      // 检查交换后是否是禁止的交易对
+      checkProhibitedPair(fromSymbol.value, toSymbol.value)
       return
     }
+    
+    // 检查是否会形成禁止的交易对
+    if (checkProhibitedPair(fromSymbol.value, selectedSymbol)) {
+      return // 如果是禁止的交易对，不进行选择
+    }
+    
     toSymbol.value = selectedSymbol
   }
 }
+function connectWalleted() {
 
+  if (!address.value) {
+
+    isLogin.value = true
+
+
+  }
+
+}
 function selIcon(state, symbol) {
-
-  tokenModalVisible.value = true
-  current.value = state
-
+  if (address.value) {
+    tokenModalVisible.value = true
+    current.value = state
+  }
 }
 function onSlippageConfirm(newVal) {
   // 这里可以做额外的处理，比如保存、请求等
@@ -337,12 +444,42 @@ function getIconUrl(icon) {
 //   { symbol: 'USDC', decimals: 6, token: TOKEN_LIST.USDC, icon: usdcIcon, blance: 0 ,isNative: false,},
 // ])
 const allAcconts = ref([
-  { symbol: 'CP', decimals: 18, token: TOKEN_LIST["CP"], icon: cpIcon, blance: 0, isNative: true, },
-  { symbol: 'JF', decimals: 18, token: TOKEN_LIST["JF"], icon: jfIcon, blance: 0, isNative: false, },
-  { symbol: 'CPUSDT', decimals: 18, token: TOKEN_LIST["CPUSDT"], icon: usdtIcon, blance: 0, isNative: false, },
-  { symbol: 'CPUSDC', decimals: 18, token: TOKEN_LIST["CPUSDC"], icon: usdcIcon, blance: 0, isNative: false, },
+  { symbol: 'DOL', decimals: 18, token: TOKEN_LIST.DOL, icon: cpIcon, blance: 0, isNative: true, },
+
+  { symbol: 'USDT', decimals: 6, token: TOKEN_LIST.USDT, icon: usdtIcon, blance: 0, isNative: false },
+  { symbol: 'USDOL', decimals: 6, token: TOKEN_LIST.USDOL, icon: usdcIcon, blance: 0, isNative: false },
 ])
+
+// 检查是否是禁止的交易对，如果是则显示弹窗
+function checkProhibitedPair(from, to) {
+  const fromUpper = from.toUpperCase()
+  const toUpper = to.toUpperCase()
+  
+  // 检查是否是 USDT 和 USDOL 之间的互换
+  const isProhibited = (fromUpper === 'USDT' && toUpper === 'USDOL') || 
+                       (fromUpper === 'USDOL' && toUpper === 'USDT')
+  
+  if (isProhibited) {
+    // 显示警告弹窗
+    ElMessageBox.alert(
+      t('swap.usdtUsdolProhibited') || 'USDT 和 USDOL 之间不允许直接兑换，请通过 DOL 或其他代币进行中转',
+      t('swap.prohibitedPairTitle') || '交易限制',
+      {
+        confirmButtonText: t('swap.sure') || '确定',
+        type: 'warning',
+        center: true
+      }
+    )
+  }
+  
+  return isProhibited
+}
+
 function reverseToken() {
+  // 先检查反转后是否会形成禁止的交易对
+  if (checkProhibitedPair(toSymbol.value, fromSymbol.value)) {
+    return // 如果是禁止的交易对，不进行反转
+  }
 
   skipWatch.value = true // 本次切换跳过 watch
   // 对调币种
@@ -356,7 +493,7 @@ function reverseToken() {
   const tempAmount = amountIn.value
   amountIn.value = amountOut.value
   amountOut.value = tempAmount
-  
+
 }
 const amountIn = ref()
 const slippageInput = ref(0.5)
@@ -376,7 +513,7 @@ async function connectWallet() {
 
     // const rpcUrl = 'https://cpchain.com' // 或其他 JSON-RPC 地址
     // provider =  new JsonRpcProvider('https://rpc-testnet.cpchain.com', 86606)
-    provider = new JsonRpcProvider('https://rpc.cpchain.com', 86608)
+    provider = new JsonRpcProvider('https://rpc.dolphinode.world', 1520)
     // await provider.send('eth_requestAccounts', [])
 
     // signer = await provider.getSigner()
@@ -407,11 +544,17 @@ async function fetchAllBalancesV6(provider, address, tokenList) {
         console.log(1)
         raw = await provider.getBalance(address)
       } else {
+        // alert(1)
         const erc20 = new Contract(token.token.address, ERC20_ABI, provider)
+        // console.log(erc20)
+        console.log("-------------------------------------------------xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx--------------------------------------")
         raw = await erc20.balanceOf(address)
+       
+        
       }
       token.blance = Number(formatUnits(raw, token.decimals)).toFixed(6)
     } catch (e) {
+        console.error(e)
       token.blance = '0'
     }
   })
@@ -425,6 +568,15 @@ async function fetchAllBalancesV6(provider, address, tokenList) {
 }
 
 const prohibitReasonText = computed(() => t('swap.prohibitReasons'))
+
+// 检查是否是禁止的交易对
+const isProhibitedPair = computed(() => {
+  const from = fromSymbol.value.toUpperCase()
+  const to = toSymbol.value.toUpperCase()
+  // 禁止 USDT 和 USDOL 互换
+  return (from === 'USDT' && to === 'USDOL') || (from === 'USDOL' && to === 'USDT')
+})
+
 watch(
   [amountIn, fromSymbol, toSymbol, slippageInput, status],
   async ([newAmount, newFrom, newTo, newSlippage, newState]) => {
@@ -437,6 +589,15 @@ watch(
     }
 
     if (!connected.value) return
+    
+    // 检查是否是禁止的交易对
+    if (isProhibitedPair.value) {
+      amountOut.value = ''
+      rate.value = ''
+      prohibitReason.value = t('swap.usdtUsdolProhibited') || 'USDT 和 USDOL 之间不允许互换'
+      return
+    }
+    
     if (!newAmount || Number(newAmount) <= 0) {
       amountOut.value = ''
       rate.value = ''
@@ -493,7 +654,7 @@ async function sure() {
   // 1️⃣ 检查钱包连接状态
   if (status.value !== 'connected') {
     ElMessage({
-      message: 'Please connect your wallet',
+      message: t('swap.connectWallet'),
       type: 'error',
       duration: 1000,
       showClose: true,
@@ -503,11 +664,11 @@ async function sure() {
   }
 
   // 2️⃣ 合约构造：非原生币才构造 fromTokenContract
-  
+
 
   try {
-   
-    
+
+
     const result = await doSwaps({
       fromToken: fromTokens.value,
       toToken: toTokens.value,
@@ -518,22 +679,23 @@ async function sure() {
       routerAddress: routerAddress,
       decimals: decimals.value,
       wcpAddress: wethAddress,
-      nativeSymbol: 'CP',
-     
+      nativeSymbol: 'DOL', // ✅ 修正：与 uniswapQuote.js 中的原生币符号保持一致
+
       setTxHash,
       setApprovalHash,
       useExactApproval: true,
-      chainId:86606
+      chainId: 86606,
+      messages: messages.value
     })
-    
+
     if (result.success) {
-      
+
       // await fetchAllBalancesV6(provider, userAddress.value, allAcconts.value)
     } else {
       isprocess.value = false
       console.error('❌ 交换失败:', result.error)
     }
-    
+
   } catch (error) {
     isprocess.value = false
     console.error('❌ 交换过程中出错:', error)
@@ -541,9 +703,9 @@ async function sure() {
     // isSwapping.value = false
   }
   // 3️⃣ 调用 swap
- 
-  
- 
+
+
+
 }
 
 watch(
@@ -553,176 +715,54 @@ watch(
       connectWallet()
     }
     if (newStatus === "disconnected") {
+
       amountIn.value = ''
       amountOut.value = ''
+      allAcconts.value.forEach(account => {
+        account.blance = 0
+      })
     }
   }
 )
-// 保存观察器和事件监听器的引用，用于清理
-let positionObserver = null
-let resizeHandler = null
-
 onMounted(() => {
   // connectWallet()
-  
-  // 动态计算交换按钮的位置，使其精确居中
-  const updateSwitchButtonPosition = () => {
-    const swapCard = document.querySelector('.swap-card')
-    const swapRows = document.querySelectorAll('.swap-row')
-    const switchRow = document.querySelector('.swap-switch-row')
-    
-    if (swapCard && swapRows.length >= 2 && switchRow) {
-      const firstRow = swapRows[0]
-      const secondRow = swapRows[1]
-      
-      const firstRowRect = firstRow.getBoundingClientRect()
-      const secondRowRect = secondRow.getBoundingClientRect()
-      const cardRect = swapCard.getBoundingClientRect()
-      
-      // 计算第一个swap-row相对于card的位置
-      const firstRowBottom = firstRowRect.bottom - cardRect.top
-      const secondRowTop = secondRowRect.top - cardRect.top
-      
-      // 计算两个row之间的中间位置
-      const middlePosition = (firstRowBottom + secondRowTop) / 2
-      
-      // 设置按钮位置（使用translateY(-50%)来精确居中）
-      switchRow.style.top = `${middlePosition}px`
-    }
-  }
-  
-  // 初始计算
-  setTimeout(() => {
-    updateSwitchButtonPosition()
-  }, 100)
-  
-  // 保存resize事件处理器
-  resizeHandler = updateSwitchButtonPosition
-  window.addEventListener('resize', resizeHandler)
-  
-  // 监听内容变化（如余额更新、内容加载）
-  positionObserver = new MutationObserver(() => {
-    setTimeout(updateSwitchButtonPosition, 50)
-  })
-  
-  const swapCard = document.querySelector('.swap-card')
-  if (swapCard) {
-    positionObserver.observe(swapCard, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['style', 'class']
-    })
-  }
-})
-
-onBeforeUnmount(() => {
-  // 清理事件监听器
-  if (resizeHandler) {
-    window.removeEventListener('resize', resizeHandler)
-    resizeHandler = null
-  }
-  
-  // 清理观察器
-  if (positionObserver) {
-    positionObserver.disconnect()
-    positionObserver = null
-  }
 })
 </script>
 
 <style lang="scss" scoped>
 #container {
-  background: var(--bg-color) url("../../assets/faucet_bg.png") no-repeat;
+  background: #121212 url("../../assets/faucet_bg.png") no-repeat;
   background-size: 100% 100%;
-  background-position: center;
   width: 100vw;
   height: 100vh;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
   align-items: center;
-  position: relative;
-  overflow: hidden;
-  animation: backgroundFloat 30s ease-in-out infinite;
-  
-  // 渐变背景动画层
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 30% 50%, rgba(0, 102, 204, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(0, 206, 122, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 50% 20%, rgba(0, 102, 204, 0.05) 0%, transparent 40%);
-    animation: gradientMove 25s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 0;
-  }
 
   // padding-top: 100px;
   .contents {
     // background: red;
     padding-top: 80px;
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     // height: 100vh;
     // width: h;
 
   }
-  
-  @keyframes gradientMove {
-    0%, 100% {
-      transform: translate(0, 0) scale(1);
-      opacity: 1;
-    }
-    33% {
-      transform: translate(3%, 3%) scale(1.05);
-      opacity: 0.9;
-    }
-    66% {
-      transform: translate(-3%, -3%) scale(0.95);
-      opacity: 0.8;
-    }
-  }
-  
-  @keyframes backgroundFloat {
-    0%, 100% {
-      background-position: center center;
-    }
-    25% {
-      background-position: 51% 51%;
-    }
-    50% {
-      background-position: 49% 49%;
-    }
-    75% {
-      background-position: 50.5% 50.5%;
-    }
-  }
 
   h1 {
-    color: var(--text-color);
+    color: #FFF;
     text-align: center;
-    font-family: 'TT_Hoves_Pro', 'PingFang', sans-serif;
+
     font-size: 40px;
     font-style: normal;
     font-weight: 600;
-    line-height: 1.2;
+    line-height: normal;
     width: 100%;
-    height: 48px;
+
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 32px;
-    margin-top: 0;
-    letter-spacing: 0.5px;
   }
 }
 
@@ -746,7 +786,7 @@ input[type="number"] {
 
 .swap-wrap {
   min-height: 100vh;
-  background: var(--el-bg-color);
+  background: #D9D9D9;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -755,21 +795,19 @@ input[type="number"] {
 .swap-card {
   max-width: 448px;
   border-radius: 24px;
-  background: var(--el-menu-bg-color);
-  border: 1.5px solid var(--el-border-color-light);
-  padding: 24px;
+  background: var(---, #1E1E1E);
+  border: 1.5px solid #222326;
+  padding: 16px;
   position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
 
   .swap-row {
     border-radius: 20px;
-    border: 1px solid var(--el-border-color-light);
+    border: 1px solid #2E2F32;
     margin-bottom: 16px;
-    padding: 20px;
-    background: var(--el-bg-color);
+    padding: 16px;
 
     .swap-label {
-      color: var(--text-color);
+      color: #FFF;
       font-size: 14px;
       margin-bottom: 10px;
       text-align: left;
@@ -783,255 +821,122 @@ input[type="number"] {
       .swap-amount-input {
         background: transparent;
         border: none;
-        color: var(--text-color);
+        color: #fff;
         outline: none;
         font-size: 32px;
         font-weight: 600;
         width: 80%;
-
-        /* iOS Safari 输入框优化 */
-        -webkit-appearance: none;
-        -webkit-text-size-adjust: 100%;
-        -webkit-user-select: text;
-        user-select: text;
-        -webkit-touch-callout: none;
-        -webkit-tap-highlight-color: transparent;
-
-        /* 防止iOS Safari自动缩放输入框 */
-        font-size: 16px !important;
-        line-height: 1.2;
-
-        &::placeholder {
-          color: rgba(0, 0, 0, 0.3);
-          opacity: 0.5;
-        }
-
-        /* 聚焦时样式 */
-        &:focus {
-          outline: none;
-          background: transparent;
-        }
-
-        /* 防止iOS Safari的自动填充样式 */
-        &:-webkit-autofill {
-          -webkit-box-shadow: 0 0 0px 1000px transparent inset;
-          -webkit-text-fill-color: var(--text-color);
-          box-shadow: 0 0 0px 1000px transparent inset;
-          transition: background-color 5000s ease-in-out 0s;
-        }
-
-        /* iOS Safari 数字键盘优化 */
-        inputmode: decimal;
       }
 
       .swap-token-btn {
         display: flex;
         align-items: center;
         border-radius: 100px;
-        border: 1px solid var(--el-border-color-light);
-        background: var(--el-menu-bg-color);
-        padding: 10px 16px;
+        border: 1px solid #2E2F32;
+        background: #151517;
+        padding: 8px 12px;
         cursor: pointer;
+        // width: 81px;
         justify-content: center;
-        gap: 6px;
-        font-weight: 500;
-        min-height: 44px; /* iOS 最小触摸目标 */
-        min-width: 44px;
-        -webkit-tap-highlight-color: transparent;
-        -webkit-touch-callout: none;
-        user-select: none;
-
-        &:hover {
-          opacity: 0.8;
-        }
-
-        &:active {
-          transform: scale(0.98);
-          transition: transform 0.1s ease;
-        }
 
         img {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          flex-shrink: 0;
+          width: 16px;
+          margin: 0 2px;
         }
 
         span {
-          color: var(--text-color);
-          font-size: 14px;
-          font-weight: 500;
-          white-space: nowrap;
+          color: #fff;
+          font-size: 12px;
+          margin: 0 2px;
         }
       }
 
       .swap-token-btn.select {
-        background: var(--el-menu-active-color);
-        color: var(--el-menu-bg-color);
-        border-color: var(--el-menu-active-color);
-        
-        span {
-          color: var(--el-menu-bg-color);
-        }
+        background: #15e784;
+        color: #fff;
       }
     }
 
     .swap-balance {
-      font-size: 13px;
-      color: rgba(0, 0, 0, 0.6);
-      margin-top: 8px;
+      font-size: 14px;
+      color: #fff;
+      margin-top: 5px;
       text-align: left;
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-weight: 500;
-      
-      span {
-        font-weight: 600;
-        color: var(--text-color);
-      }
     }
   }
 
   .swap-switch-row {
     display: flex;
     justify-content: center;
-    align-items: center;
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
-    /* 精确计算桌面端位置：基于第一个swap-row的实际高度 */
-    /* swap-card padding-top: 24px */
-    /* 第一个swap-row: padding(20px*2) + label(14px+10px) + amount-row(约75px) + balance(13px+8px) = 约164px */
-    /* margin-bottom的一半: 8px */
-    /* 总计: 24px + 164px + 8px = 196px */
-    top: calc(24px + 20px + 24px + 75px + 21px + 20px + 8px);
-    z-index: 10;
-    width: auto;
+    width: calc(100% - 32px);
+    top: 125.4px;
+    // bottom: 0px;
+    // transform: translateY(-50%);
 
     .swap-switch-btn {
-      border: 2px solid var(--el-menu-active-color);
-      background: var(--el-menu-bg-color);
+      border: 1px solid #2E2F32;
+      background: #1E1E1E;
       border-radius: 50%;
+
       width: 48px;
       height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      position: relative;
-      z-index: 10;
-      min-width: 44px;
-      min-height: 44px;
-      -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none;
-      user-select: none;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-      &:hover {
-        opacity: 0.8;
-      }
-
-      &:active {
-        transform: scale(0.95);
-        transition: transform 0.1s ease;
-      }
-
-      /* 添加触摸反馈动画 */
-      transition: transform 0.1s ease, opacity 0.2s ease;
     }
   }
 
   .swap-setting-row {
     display: flex;
     height: 48px;
-    padding: 0 20px;
+    padding: 0 16px;
     justify-content: space-between;
     border-radius: 100px;
-    border: 1px solid var(--el-border-color-light);
+    border: 1px solid #2E2F32;
     align-items: center;
     margin-bottom: 16px;
-    background: var(--el-bg-color);
-    cursor: pointer;
-    min-height: 44px;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    user-select: none;
-
-    &:hover {
-      opacity: 0.8;
-    }
-
-    &:active {
-      transform: scale(0.98);
-      transition: transform 0.1s ease;
-    }
-
-    /* 添加触摸反馈动画 */
-    transition: transform 0.1s ease, opacity 0.2s ease;
 
     .setting-label {
-      color: var(--text-color);
+      color: #fff;
       font-size: 15px;
       font-weight: 500;
       display: flex;
       align-items: center;
-      gap: 8px;
     }
 
     .slip-btn {
       background: none;
-      color: var(--text-color);
+      color: #fff;
       border: none;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      min-height: 44px;
-      min-width: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      -webkit-tap-highlight-color: transparent;
     }
   }
 
   .swap-main-btn {
     width: 100%;
-    height: 52px;
+    height: 48px;
     border: none;
     border-radius: 100px;
-    background: var(--el-border-color-light);
-    color: var(--text-color);
+    background: #2E2F32;
+    color: #8E8E92;
     font-size: 16px;
     font-weight: 700;
     cursor: not-allowed;
-    opacity: 0.6;
-    margin-top: 8px;
+    opacity: 0.75;
+    margin-top: 4px;
     outline: none;
-    min-height: 44px;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    user-select: none;
-    transition: transform 0.1s ease, opacity 0.2s ease, background-color 0.2s ease;
 
     &:not([disabled]) {
-      background: var(--el-menu-active-color);
-      color: var(--el-menu-bg-color);
+      background: #00CE7A;
+      color: #1A1E1D;
       cursor: pointer;
       opacity: 1;
-
-      &:hover {
-        opacity: 0.9;
-      }
-
-      &:active {
-        transform: scale(0.98);
-      }
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
     }
   }
 }
@@ -1039,553 +944,12 @@ input[type="number"] {
 
 @media (max-width: 768px) {
   #container {
-    width: 100%;
-    padding: 0;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    h1 {
-      font-size: 28px;
-      margin-bottom: 24px;
-      height: auto;
-      min-height: 34px;
-    }
-
-    .contents {
-      padding-top: 0;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 60px 16px 20px;
-      box-sizing: border-box;
-    }
-  }
-
-  .swap-wrap {
-    padding: 0;
-    min-height: auto;
-  }
-
-  .swap-card {
-    max-width: 90%;
-    width: 90%;
-    padding: 20px 16px;
-    border-radius: 20px;
-    margin: 0 auto;
-    position: relative;
-
-    .swap-row {
-      padding: 16px;
-      border-radius: 16px;
-      margin-bottom: 12px;
-
-      .swap-label {
-        font-size: 13px;
-        margin-bottom: 8px;
-      }
-
-      .swap-amount-row {
-        .swap-amount-input {
-          font-size: 28px;
-          width: 70%;
-        }
-
-        .swap-token-btn {
-          padding: 12px 14px;
-          min-height: 44px; // 确保触摸目标足够大
-          
-          img {
-            width: 22px;
-            height: 22px;
-          }
-
-          span {
-            font-size: 14px;
-          }
-        }
-      }
-
-      .swap-balance {
-        font-size: 12px;
-        margin-top: 6px;
-      }
-    }
-
-    .swap-switch-row {
-      left: 50%;
-      transform: translateX(-50%) translateY(-50%);
-      width: auto;
-      /* 移动端计算：swap-card padding: 20px + swap-row padding: 16px + 内容高度: ~120px + swap-row padding-bottom: 16px + margin的一半: 6px */
-      top: calc(20px + 16px + 120px + 16px + 6px);
-
-      .swap-switch-btn {
-        width: 44px;
-        height: 44px;
-        min-width: 44px;
-        min-height: 44px;
-      }
-    }
-
-    .swap-setting-row {
-      height: 44px;
-      padding: 0 16px;
-      margin-bottom: 12px;
-      min-height: 44px; // 确保触摸目标足够大
-
-      .setting-label {
-        font-size: 14px;
-      }
-
-      .slip-btn {
-        font-size: 13px;
-        min-height: 44px;
-        padding: 8px 0;
-      }
-    }
-
-    .swap-main-btn {
-      height: 48px;
-      font-size: 16px;
-      min-height: 48px; // 确保触摸目标足够大
-      margin-top: 12px;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  #container {
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: calc(100vw - 30px);
+    padding: 0 15px;
 
     h1 {
       font-size: 24px;
-      margin-bottom: 20px;
-    }
-
-    .contents {
-      padding-top: 0;
-      padding: 50px 12px 20px;
-      justify-content: center;
-    }
-  }
-
-  .swap-card {
-    max-width: 92%;
-    width: 92%;
-    padding: 16px 12px;
-
-    .swap-row {
-      padding: 14px;
-
-      .swap-amount-row {
-        .swap-amount-input {
-          font-size: 24px;
-        }
-
-        .swap-token-btn {
-          padding: 10px 12px;
-        }
-      }
-    }
-
-    .swap-switch-row {
-      left: 50%;
-      transform: translateX(-50%) translateY(-50%);
-      width: auto;
-      /* 小屏幕计算：swap-card padding: 16px + swap-row padding: 14px + 内容高度: ~110px + swap-row padding-bottom: 14px + margin的一半: 5px */
-      top: calc(16px + 14px + 110px + 14px + 5px);
-    }
-  }
-}
-
-/* iPhone SE (375x667) 和类似小屏设备 */
-@media only screen
-  and (device-width: 375px)
-  and (device-height: 667px)
-  and (-webkit-device-pixel-ratio: 2) {
-  #container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    h1 {
-      font-size: 22px;
-      margin-bottom: 16px;
-    }
-
-    .contents {
-      padding-top: 0;
-      padding: 40px 10px 20px;
-      justify-content: center;
-    }
-  }
-
-  .swap-card {
-    max-width: 92%;
-    width: 92%;
-    padding: 14px 10px;
-
-    .swap-row {
-      padding: 12px;
-      margin-bottom: 10px;
-
-      .swap-amount-row {
-        .swap-amount-input {
-          font-size: 22px;
-          width: 65%;
-        }
-
-        .swap-token-btn {
-          padding: 8px 10px;
-          font-size: 13px;
-
-          img {
-            width: 18px;
-            height: 18px;
-          }
-
-          span {
-            font-size: 13px;
-          }
-        }
-      }
-
-      .swap-balance {
-        font-size: 11px;
-        margin-top: 6px;
-      }
-    }
-
-    .swap-switch-row {
-      left: 50%;
-      transform: translateX(-50%) translateY(-50%);
-      width: auto;
-      /* iPhone SE计算：swap-card padding: 14px + swap-row padding: 12px + 内容高度: ~100px + swap-row padding-bottom: 12px + margin的一半: 5px */
-      top: calc(14px + 12px + 100px + 12px + 5px);
-
-      .swap-switch-btn {
-        width: 40px;
-        height: 40px;
-      }
-    }
-
-    .swap-setting-row {
-      height: 40px;
-      padding: 0 14px;
-      margin-bottom: 10px;
-
-      .setting-label {
-        font-size: 13px;
-      }
-    }
-
-    .swap-main-btn {
-      height: 44px;
-      font-size: 15px;
-      margin-top: 10px;
-    }
-  }
-}
-
-/* iPhone X/XS/11 Pro/12 mini/13 mini (375x812) */
-@media only screen
-  and (device-width: 375px)
-  and (device-height: 812px)
-  and (-webkit-device-pixel-ratio: 3) {
-  #container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    h1 {
-      font-size: 26px;
-      margin-bottom: 20px;
-    }
-
-    .contents {
-      padding-top: 0;
-      padding: 50px 14px 20px;
-      justify-content: center;
-    }
-  }
-
-  .swap-card {
-    max-width: 90%;
-    width: 90%;
-    padding: 18px 14px;
-
-    .swap-row {
-      padding: 16px;
-      margin-bottom: 12px;
-
-      .swap-amount-row {
-        .swap-amount-input {
-          font-size: 26px;
-          width: 70%;
-        }
-
-        .swap-token-btn {
-          padding: 10px 12px;
-          min-height: 44px;
-
-          img {
-            width: 20px;
-            height: 20px;
-          }
-
-          span {
-            font-size: 14px;
-          }
-        }
-      }
-    }
-
-    .swap-switch-row {
-      left: 50%;
-      transform: translateX(-50%) translateY(-50%);
-      width: auto;
-      /* iPhone X/12 mini计算：swap-card padding: 18px + swap-row padding: 16px + 内容高度: ~120px + swap-row padding-bottom: 16px + margin的一半: 6px */
-      top: calc(18px + 16px + 120px + 16px + 6px);
-
-      .swap-switch-btn {
-        width: 46px;
-        height: 46px;
-      }
-    }
-
-    .swap-main-btn {
-      height: 48px;
-      font-size: 16px;
-      margin-top: 12px;
-    }
-  }
-}
-
-/* iPhone 12/13/14 (390x844) */
-@media only screen
-  and (device-width: 390px)
-  and (device-height: 844px)
-  and (-webkit-device-pixel-ratio: 3) {
-  #container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    h1 {
-      font-size: 28px;
       margin-bottom: 24px;
-    }
-
-    .contents {
-      padding-top: 0;
-      padding: 55px 16px 20px;
-      justify-content: center;
-    }
-  }
-
-  .swap-card {
-    max-width: 90%;
-    width: 90%;
-    padding: 20px 16px;
-
-    .swap-row {
-      padding: 18px;
-      margin-bottom: 14px;
-
-      .swap-amount-row {
-        .swap-amount-input {
-          font-size: 28px;
-          width: 72%;
-        }
-
-        .swap-token-btn {
-          padding: 12px 14px;
-          min-height: 46px;
-
-          img {
-            width: 22px;
-            height: 22px;
-          }
-
-          span {
-            font-size: 15px;
-          }
-        }
-      }
-    }
-
-    .swap-switch-row {
-      left: 50%;
-      transform: translateX(-50%) translateY(-50%);
-      width: auto;
-      /* iPhone 12/13/14计算：swap-card padding: 20px + swap-row padding: 18px + 内容高度: ~130px + swap-row padding-bottom: 18px + margin的一半: 7px */
-      top: calc(20px + 18px + 130px + 18px + 7px);
-
-      .swap-switch-btn {
-        width: 48px;
-        height: 48px;
-      }
-    }
-
-    .swap-main-btn {
-      height: 50px;
-      font-size: 17px;
-      margin-top: 14px;
-    }
-  }
-}
-
-/* iPhone 15 (393x852) */
-@media only screen
-  and (device-width: 393px)
-  and (device-height: 852px)
-  and (-webkit-device-pixel-ratio: 3) {
-  #container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    h1 {
-      font-size: 28px;
-      margin-bottom: 24px;
-    }
-
-    .contents {
-      padding-top: 0;
-      padding: 55px 16px 20px;
-      justify-content: center;
-    }
-  }
-
-  .swap-card {
-    max-width: 90%;
-    width: 90%;
-    padding: 20px 16px;
-
-    .swap-row {
-      padding: 18px;
-      margin-bottom: 14px;
-
-      .swap-amount-row {
-        .swap-amount-input {
-          font-size: 28px;
-          width: 72%;
-        }
-
-        .swap-token-btn {
-          padding: 12px 14px;
-          min-height: 46px;
-
-          img {
-            width: 22px;
-            height: 22px;
-          }
-
-          span {
-            font-size: 15px;
-          }
-        }
-      }
-    }
-
-    .swap-switch-row {
-      left: 50%;
-      transform: translateX(-50%) translateY(-50%);
-      width: auto;
-      /* iPhone 12/13/14计算：swap-card padding: 20px + swap-row padding: 18px + 内容高度: ~130px + swap-row padding-bottom: 18px + margin的一半: 7px */
-      top: calc(20px + 18px + 130px + 18px + 7px);
-
-      .swap-switch-btn {
-        width: 48px;
-        height: 48px;
-      }
-    }
-
-    .swap-main-btn {
-      height: 50px;
-      font-size: 17px;
-      margin-top: 14px;
-    }
-  }
-}
-
-/* iPhone 6/7/8 Plus, XS Max, XR, 11, 11 Pro Max, 12/13/14 Pro Max, 15 Plus/Pro Max (414x896, 428x926, 430x932) */
-@media only screen
-  and (min-device-width: 414px)
-  and (max-device-width: 430px)
-  and (-webkit-device-pixel-ratio: 3) {
-  #container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    h1 {
-      font-size: 30px;
-      margin-bottom: 26px;
-    }
-
-    .contents {
-      padding-top: 0;
-      padding: 60px 18px 20px;
-      justify-content: center;
-    }
-  }
-
-  .swap-card {
-    max-width: 88%;
-    width: 88%;
-    padding: 22px 18px;
-
-    .swap-row {
-      padding: 20px;
-      margin-bottom: 16px;
-
-      .swap-amount-row {
-        .swap-amount-input {
-          font-size: 30px;
-          width: 74%;
-        }
-
-        .swap-token-btn {
-          padding: 14px 16px;
-          min-height: 48px;
-
-          img {
-            width: 24px;
-            height: 24px;
-          }
-
-          span {
-            font-size: 16px;
-          }
-        }
-      }
-    }
-
-    .swap-switch-row {
-      left: 50%;
-      transform: translateX(-50%) translateY(-50%);
-      width: auto;
-      /* iPhone Plus/Pro Max计算：swap-card padding: 22px + swap-row padding: 20px + 内容高度: ~140px + swap-row padding-bottom: 20px + margin的一半: 8px */
-      top: calc(22px + 20px + 140px + 20px + 8px);
-
-      .swap-switch-btn {
-        width: 50px;
-        height: 50px;
-      }
-    }
-
-    .swap-main-btn {
-      height: 52px;
-      font-size: 18px;
-      margin-top: 16px;
     }
   }
 }

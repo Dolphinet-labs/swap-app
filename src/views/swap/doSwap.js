@@ -68,21 +68,37 @@ const erc20Abi = [
     outputs: [{ name: '', type: 'bool' }]
   }
 ]
+
 /**
  * 精确的 gas 预估函数
  */
 async function computedGas(abi, functionName, args, to, account, value = undefined) {
   try {
+    console.log('🔍 Starting gas estimation...', {
+      functionName,
+      to,
+      account,
+      hasValue: !!value
+    })
+
     // Calculate gas fees
     const feesPerGas = await estimateFeesPerGas(config)
 
+    // Prepare the transaction data
+    const txData = encodeFunctionData({
+      abi,
+      functionName,
+      args,
+    })
+
+    console.log('📦 Transaction data prepared:', {
+      dataLength: txData.length,
+      dataPreview: txData.substring(0, 66) + '...'
+    })
+
     // Estimate gas for the transaction
-    const gas = await estimateGas(config, {
-      data: encodeFunctionData({
-        abi,
-        functionName,
-        args,
-      }),
+    const estimatedGas = await estimateGas(config, {
+      data: txData,
       to: to,
       account: account,
       maxFeePerGas: feesPerGas.maxFeePerGas,
@@ -90,35 +106,67 @@ async function computedGas(abi, functionName, args, to, account, value = undefin
       ...(value && { value })
     })
 
+    // 添加 20% 的 gas 缓冲
+    const gasWithBuffer = (estimatedGas * BigInt(120)) / BigInt(100)
+
     // 打印预估gas值
     console.log('⛽ Gas Estimation:', {
       functionName,
-      estimatedGas: gas.toString(),
+      estimatedGas: estimatedGas.toString(),
+      gasWithBuffer: gasWithBuffer.toString(),
+      bufferPercentage: '20%',
       maxFeePerGas: feesPerGas.maxFeePerGas.toString(),
       maxPriorityFeePerGas: feesPerGas.maxPriorityFeePerGas.toString(),
-      totalMaxCost: (gas * feesPerGas.maxFeePerGas).toString() + ' wei'
+      totalMaxCost: (gasWithBuffer * feesPerGas.maxFeePerGas).toString() + ' wei'
     })
 
     return {
-      gas,
+      gas: gasWithBuffer,
       maxFeePerGas: feesPerGas.maxFeePerGas,
       maxPriorityFeePerGas: feesPerGas.maxPriorityFeePerGas
     }
   } catch (error) {
-    console.error('Gas estimation failed:', error)
-    // 回退到默认值
+    console.error('❌ Gas estimation failed:', error)
+    console.error('📋 Estimate Gas Arguments:', {
+      functionName,
+      args: args.map(arg => typeof arg === 'bigint' ? arg.toString() : arg),
+      to,
+      account,
+      value: value?.toString()
+    })
+
+    // 尝试从错误中提取有用信息
+    if (error.message) {
+      if (error.message.includes('insufficient funds')) {
+        console.error('💸 Insufficient funds for gas * price + value')
+      } else if (error.message.includes('execution reverted')) {
+        console.error('⚠️ Transaction would revert. Possible reasons:')
+        console.error('  - Insufficient token balance')
+        console.error('  - Insufficient allowance')
+        console.error('  - Slippage too low')
+        console.error('  - Insufficient liquidity')
+        console.error('  - Invalid parameters')
+      }
+    }
+
+    // 回退到默认值（也添加20%缓冲）
+    const baseFallbackGas = BigInt(2000000)
+    const fallbackGasWithBuffer = (baseFallbackGas * BigInt(120)) / BigInt(100)
+    
     const fallbackGas = {
-      gas: BigInt(2000000),
+      gas: fallbackGasWithBuffer,
       maxFeePerGas: parseGwei('20'),
       maxPriorityFeePerGas: parseGwei('2')
     }
 
     console.log('⛽ Gas Estimation (Fallback):', {
       functionName,
-      estimatedGas: fallbackGas.gas.toString(),
+      baseFallbackGas: baseFallbackGas.toString(),
+      fallbackGasWithBuffer: fallbackGasWithBuffer.toString(),
+      bufferPercentage: '20%',
       maxFeePerGas: fallbackGas.maxFeePerGas.toString(),
       maxPriorityFeePerGas: fallbackGas.maxPriorityFeePerGas.toString(),
-      note: 'Using fallback values due to estimation failure'
+      note: 'Using fallback values with 20% buffer due to estimation failure'
     })
 
     return fallbackGas
@@ -126,7 +174,7 @@ async function computedGas(abi, functionName, args, to, account, value = undefin
 }
 
 /**
- * Unified doSwaps supporting CP native coin or ERC20 CP token on AeroSwap.
+ * Unified doSwaps supporting DOL native coin or ERC20 tokens on Dolphinet chain.
  * Uses @wagmi/vue hooks for contract interactions
  * 使用精确授权金额来减少钱包警告提示
  */
@@ -144,7 +192,10 @@ export async function doSwaps({
 
   setTxHash,          // 👈 设置交易哈希的回调
   setApprovalHash,    // 👈 设置授权哈希的回调
-  useExactApproval = true // 👈 是否使用精确授权（减少钱包警告）
+  useExactApproval = true, // 👈 是否使用精确授权（减少钱包警告）
+  
+  // 👈 新增：国际化提示语对象
+  messages = {}
 }) {
   let error = null
   let txHash = null
@@ -156,15 +207,15 @@ export async function doSwaps({
   }
 
   function getTokenAddress(token) {
-    if (!token) throw new Error('Token undefined')
+    if (!token) throw new Error(messages.tokenUndefined || 'Token undefined')
     return isNative(token) ? wcpAddress : token.address
   }
 
   try {
     // 参数验证
-    if (!trade) throw new Error('No valid Trade object')
-    if (!fromToken || !toToken) throw new Error('Token not defined')
-    if (!userAddress || !routerAddress) throw new Error('Incomplete params')
+    if (!trade) throw new Error(messages.noValidTrade || 'No valid Trade object')
+    if (!fromToken || !toToken) throw new Error(messages.tokenNotDefined || 'Token not defined')
+    if (!userAddress || !routerAddress) throw new Error(messages.incompleteParams || 'Incomplete params')
 
     console.log('🔄 Starting swap:', {
       from: fromToken.symbol,
@@ -176,12 +227,12 @@ export async function doSwaps({
     // ✅ 高精度滑点支持：18 位
     const slippageDecimal = Number(slippageInput)
     if (isNaN(slippageDecimal) || slippageDecimal < 0) {
-      throw new Error('Invalid slippage input')
+      throw new Error(messages.invalidSlippage || 'Invalid slippage input')
     }
 
     // ✅ 可选：滑点最小限制（防止用户设成0）
     if (slippageDecimal < 0.00000001) {
-      throw new Error('Slippage too low, may cause transaction to revert')
+      throw new Error(messages.slippageTooLow || 'Slippage too low, may cause transaction to revert')
     }
 
     const numerator = BigInt(Math.floor(slippageDecimal * 1e18))
@@ -195,11 +246,9 @@ export async function doSwaps({
       slippagePercent: slippageDecimal
     })
 
-
-
-    // 1️⃣ Native CP → Token
+    // 1️⃣ Native DOL → Token
     if (isNative(fromToken)) {
-      if (isNative(toToken)) throw new Error(`${nativeSymbol} to ${nativeSymbol} swap not allowed`)
+      if (isNative(toToken)) throw new Error(`${nativeSymbol} to ${nativeSymbol} ${messages.sameTokenSwap || 'swap not allowed'}`)
 
       console.log('🔄 Native to Token swap')
       const path = [wcpAddress, getTokenAddress(toToken)]
@@ -243,7 +292,7 @@ export async function doSwaps({
       console.log('✅ Native swap submitted:', hash)
     }
 
-    // 2️⃣ Token → Native CP
+    // 2️⃣ Token → Native DOL
     else if (isNative(toToken)) {
       console.log('🔄 Token to Native swap')
       const fromTokenAddress = getTokenAddress(fromToken)
@@ -308,18 +357,22 @@ export async function doSwaps({
 
           // 显示授权提示
           ElMessage({
-            message: 'Approval submitted, waiting for confirmation...',
+            message: messages.approvalSubmitted || 'Approval submitted, waiting for confirmation...',
             type: 'info',
             duration: 3000,
             showClose: true
           })
+
+          // ⚠️ 重要：等待授权交易确认，否则 gas 预估会失败
+          console.log('⏳ Waiting for approval confirmation before swap...')
+          await new Promise(resolve => setTimeout(resolve, 2000))
         }
       } catch (e) {
         console.error('❌ Approval error:', e)
         if (e.message && e.message.includes('User rejected')) {
-          throw new Error('User cancelled the authorization operation')
+          throw new Error(messages.userCancelledAuth || 'User cancelled the authorization operation')
         }
-        throw new Error('Failed to check/set allowance: ' + (e.message || e))
+        throw new Error((messages.allowanceError || 'Failed to check/set allowance: ') + (e.message || e))
       }
 
       // 执行交换
@@ -327,6 +380,13 @@ export async function doSwaps({
 
       // 精确 gas 预估 - 交换
       console.log('⛽ Estimating gas for Token to Native swap...')
+      console.log('📋 Swap parameters for gas estimation:', {
+        amountIn: amountInParsed.toString(),
+        minAmount,
+        path,
+        userAddress,
+        deadline: deadline.toString()
+      })
       const swapGasEstimate = await computedGas(
         routerAbi,
         'swapExactTokensForETH',
@@ -362,6 +422,17 @@ export async function doSwaps({
       const fromTokenAddress = getTokenAddress(fromToken)
       const toTokenAddress = getTokenAddress(toToken)
 
+      // ✅ 验证地址格式
+      if (!fromTokenAddress || !toTokenAddress) {
+        throw new Error('Invalid token address')
+      }
+      if (fromTokenAddress.length !== 42 || toTokenAddress.length !== 42) {
+        throw new Error(`Invalid address length: from=${fromTokenAddress.length}, to=${toTokenAddress.length}`)
+      }
+      if (!fromTokenAddress.startsWith('0x') || !toTokenAddress.startsWith('0x')) {
+        throw new Error('Address must start with 0x')
+      }
+
       const path = [fromTokenAddress, toTokenAddress]
       const amountInParsed = parseUnits(amountIn.toString(), decimals)
 
@@ -370,8 +441,38 @@ export async function doSwaps({
         toToken: toTokenAddress,
         path,
         amountIn: amountInParsed.toString(),
-        minAmount
+        minAmount,
+        deadline: deadline.toString(),
+        userAddress,
+        routerAddress
       })
+
+      // ✅ 检查用户余额
+      try {
+        const balanceAbi = [{
+          name: 'balanceOf',
+          type: 'function',
+          inputs: [{ name: 'account', type: 'address' }],
+          outputs: [{ name: '', type: 'uint256' }]
+        }]
+        const userBalance = await readContract(config, {
+          address: fromTokenAddress,
+          abi: balanceAbi,
+          functionName: 'balanceOf',
+          args: [userAddress]
+        })
+        console.log('💰 User token balance:', {
+          balance: userBalance.toString(),
+          required: amountInParsed.toString(),
+          sufficient: BigInt(userBalance) >= BigInt(amountInParsed)
+        })
+        
+        if (BigInt(userBalance) < BigInt(amountInParsed)) {
+          throw new Error(messages.insufficientBalance || 'Insufficient token balance')
+        }
+      } catch (balanceError) {
+        console.error('⚠️ Balance check failed:', balanceError)
+      }
 
       // 检查授权
       try {
@@ -424,19 +525,23 @@ export async function doSwaps({
 
           // 显示授权提示
           ElMessage({
-            message: 'Approval submitted, waiting for confirmation...',
+            message: messages.approvalSubmitted || 'Approval submitted, waiting for confirmation...',
             type: 'info',
             duration: 3000,
             showClose: true
           })
+
+          // ⚠️ 重要：等待授权交易确认，否则 gas 预估会失败
+          console.log('⏳ Waiting for approval confirmation before swap...')
+          await new Promise(resolve => setTimeout(resolve, 2000))
         }
       } catch (e) {
         console.error('❌ Approval error:', e)
 
         if (e.message && e.message.includes('User rejected')) {
-          throw new Error('User cancelled the authorization operation')
+          throw new Error(messages.userCancelledAuth || 'User cancelled the authorization operation')
         }
-        throw new Error('Failed to check/set allowance: ' + (e.message || e))
+        throw new Error((messages.allowanceError || 'Failed to check/set allowance: ') + (e.message || e))
       }
 
       // 执行交换
@@ -444,6 +549,13 @@ export async function doSwaps({
 
       // 精确 gas 预估 - 交换
       console.log('⛽ Estimating gas for ERC20 to ERC20 swap...')
+      console.log('📋 Swap parameters for gas estimation:', {
+        amountIn: amountInParsed.toString(),
+        minAmount,
+        path,
+        userAddress,
+        deadline: deadline.toString()
+      })
       const swapGasEstimate = await computedGas(
         routerAbi,
         'swapExactTokensForTokens',
@@ -479,7 +591,7 @@ export async function doSwaps({
       success: true,
       txHash,
       didApprove,
-      message: 'Transaction submitted successfully'
+      message: messages.transactionSuccess || 'Transaction submitted successfully'
     }
 
   } catch (e) {
@@ -495,46 +607,46 @@ export async function doSwaps({
     // 根据错误类型显示不同消息
     if (e.message && e.message.includes('User rejected')) {
       ElMessage({
-        message: 'User Reject!',
+        message: messages.userReject || 'User Reject!',
         type: 'warning',
         duration: 2000,
         showClose: true
       })
-      error = 'User cancelled the transaction operation'
+      error = messages.userCancelledTransaction || 'User cancelled the transaction operation'
     } else if (e.message && e.message.includes('insufficient funds')) {
       ElMessage({
-        message: 'Insufficient funds!',
+        message: messages.insufficientFunds || 'Insufficient funds!',
         type: 'error',
         duration: 2000,
         showClose: true
       })
-      error = 'Insufficient balance'
+      error = messages.insufficientBalance || 'Insufficient balance'
     } else if (e.message && e.message.includes('slippage')) {
       ElMessage({
-        message: 'Slippage too high, try increasing slippage tolerance!',
+        message: messages.slippageTooHigh || 'Slippage too high, try increasing slippage tolerance!',
         type: 'error',
         duration: 3000,
         showClose: true
       })
-      error = 'Slippage too high, please increase slippage tolerance'
+      error = messages.slippageError || 'Slippage too high, please increase slippage tolerance'
     }
     else if (e.message && e.message.includes('User cancelled the authorization operation')) {
       ElMessage({
-        message: 'User Reject!',
+        message: messages.userReject || 'User Reject!',
         type: 'warning',
         duration: 2000,
         showClose: true
       })
-      error = 'User cancelled the transaction operation'
+      error = messages.userCancelledTransaction || 'User cancelled the transaction operation'
     }
     else {
       ElMessage({
-        message: 'Swap Fail!',
+        message: messages.swapFail || 'Swap Fail!',
         type: 'error',
         duration: 2000,
         showClose: true
       })
-      error = 'Swap failed: Please try again later!'
+      error = messages.swapFailed || 'Swap failed: Please try again later!'
     }
 
     return { success: false, error, details: e.message }
