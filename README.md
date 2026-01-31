@@ -1,4 +1,4 @@
-# cp_swap
+# Dolphinet Dex
 
 ## Project setup
 ```
