@@ -4,7 +4,7 @@
       <el-row>
         <el-col :xs="3" :sm="4" :md="5" :lg="9" :xl="11">
           <div class="gridContent">
-            <a href="/" class="flex"><img src="@/assets/images/logo.png" alt="AeroSwap" /></a>
+            <a href="/" class="flex"><img src="@/assets/images/dolphinet.png" alt="AeroSwap" /></a>
           </div>
           <!-- <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
             <el-menu-item index="1">Processing Center</el-menu-item>
