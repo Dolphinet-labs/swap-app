@@ -128,16 +128,17 @@ function confirm() {
   position: fixed;
   z-index: 9999;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   .modal-box {
-    background: #151517;
+    background: #FFFFFF;
     border-radius: 16px;
     min-width: 260px;
     min-height: 130px;
-    box-shadow: 0 6px 40px #0009;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     padding: 20px 18px 16px 18px;
     display: flex;
     flex-direction: column;
@@ -146,11 +147,11 @@ function confirm() {
       justify-content: space-between;
       align-items: center;
       font-size: 15px;
-      color: #fff;
+      color: #2C2C2E;
       margin-bottom: 18px;
       .close-btn {
         font-size: 20px;
-        color: #888;
+        color: #8E8E93;
         cursor: pointer;
         line-height: 1;
       }
@@ -159,28 +160,31 @@ function confirm() {
       display: flex;
       align-items: center;
       margin-bottom: 10px;
-      background: #101012;
+      background: #F5F5F7;
       border-radius: 8px;
       padding: 0 10px;
-      border: 1px solid #222;
+      border: 1px solid rgba(0, 0, 0, 0.08);
       .modal-input {
         flex: 1;
         background: transparent;
         border: none;
-        color: #fff;
+        color: #2C2C2E;
         font-size: 18px;
         outline: none;
         padding: 12px 0;
         text-align: left;
       }
+      .modal-input::placeholder {
+        color: #8E8E93;
+      }
       .modal-percent {
-        color: #555;
+        color: #8E8E93;
         margin-left: 4px;
         font-size: 16px;
       }
     }
     .modal-warn {
-      color: #ffca6f;
+      color: #b8860b;
       font-size: 13px;
       padding: 2px 0 8px 0;
       min-height: 16px;
@@ -191,14 +195,14 @@ function confirm() {
       border-radius: 999px;
       border: none;
       height: 38px;
-      background: #14e18d;
-      color: #111;
+      background: #5B9CF5;
+      color: #FFFFFF;
       font-weight: bold;
       font-size: 16px;
       margin-top: 2px;
       cursor: pointer;
       transition: background 0.2s;
-      &:hover { background: #00ce7a; }
+      &:hover { background: #4A90E2; }
     }
   }
 }

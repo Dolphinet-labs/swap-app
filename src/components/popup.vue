@@ -133,7 +133,7 @@ function closePopup() {
   width: 100%;
   height: 100%;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #00CE7A;
+  border-top: 4px solid #5B9CF5;
   border-radius: 50%;
   animation: spin 2s linear infinite;
 }
@@ -152,7 +152,7 @@ function closePopup() {
   position: absolute;
   width: 15px;
   height: 15px;
-  background-color: #00CE7A;
+  background-color: #5B9CF5;
   border-radius: 50%;
   top: 50%;
   left: 50%;
@@ -199,7 +199,7 @@ function closePopup() {
 
 .coming-soon {
   font-size: 16px;
-  color: #00CE7A;
+  color: #5B9CF5;
   font-weight: 600;
   margin-bottom: 20px;
   opacity: 0;
@@ -210,7 +210,7 @@ function closePopup() {
 .btn {
   display: inline-block;
   padding: 12px 30px;
-  background-color: #00CE7A;
+  background-color: #5B9CF5;
   width: 100%;
   color: white;
   border: none;

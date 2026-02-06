@@ -117,7 +117,7 @@ function getIcon(icon) {
         top: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.4);
     }
 
     .modal-content {
@@ -127,14 +127,15 @@ function getIcon(icon) {
         transform: translateX(-50%);
         top: 20%;
         width: 350px;
-        background: #18191a;
-        color: #fff;
+        background: #FFFFFF;
+        color: #2C2C2E;
         border-radius: 18px;
         padding: 24px;
         height: 400px;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.08);
         animation: slideInRight .2s;
     }
 
@@ -157,8 +158,7 @@ function getIcon(icon) {
         font-size: 20px;
         font-weight: bold;
         margin-bottom: 24px;
-        // padding: 0 20px;
-        // height: 54px;
+        color: #2C2C2E;
     }
   
     .modal-close {
@@ -166,6 +166,7 @@ function getIcon(icon) {
         cursor: pointer;
         user-select: none;
         line-height: 1;
+        filter: brightness(0);
     }
     @media screen and (max-width: 768px) {
         .modal-header {
@@ -214,28 +215,22 @@ function getIcon(icon) {
         height: 38px;
         border: none;
         outline: none;
-        // color: #666868;
-        // padding: 10px;
         padding: 0 20px;
         border-radius: 100px;
-        background: #252629;
-        border: none;
-        color: #fff;
+        background: #F5F5F7;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        color: #2C2C2E;
         font-size: 16px;
     }
 
     .search-box input::placeholder {
-        color: #666868;
+        color: #8E8E93;
     }
 
     .token-list-title {
-      
-        // padding: 0 20px 5px 20px;
-        // height: 35px;
-        color:  #8E8E92;
+        color: #8E8E93;
         text-align: left;
         display: flex;
-        //  padding-left: 30px;
         align-items: center;
         font-size: 12px;
         font-style: normal;
@@ -246,14 +241,12 @@ function getIcon(icon) {
     .token-item {
         display: flex;
         align-items: center;
-        // padding: ;
         cursor: pointer;
         height: 64px;
-        // border-bottom: 1px solid #22232a;
         transition: background .2s;
 
         &:hover {
-            background: #212226;
+            background: #F5F5F7;
         }
 
         .token-icon {
@@ -271,12 +264,11 @@ function getIcon(icon) {
             font-weight: 600;
             text-align: left;
             font-size: 14px;
+            color: #2C2C2E;
         }
 
         .token-address {
-            color: var(---, #666868);
-
-
+            color: #8E8E93;
             font-size: 12px;
             font-style: normal;
             font-weight: 400;
@@ -287,10 +279,8 @@ function getIcon(icon) {
         .token-balance {
             min-width: 56px;
             text-align: right;
-
-            color: var(---, #FFF);
+            color: #2C2C2E;
             text-align: center;
-
             font-size: 14px;
             font-style: normal;
             font-weight: 500;

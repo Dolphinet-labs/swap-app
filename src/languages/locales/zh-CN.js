@@ -223,7 +223,7 @@ export default {
   },
   swap: {
     connectWallet: "连接钱包",
-    title: "随时随地，轻松兑换",
+    title: "AeroSwap",
     sell: "出售",
     buy: "购买",
     balance: "余额",

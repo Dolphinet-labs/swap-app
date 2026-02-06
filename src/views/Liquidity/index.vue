@@ -129,7 +129,7 @@
             <div class="container">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <h3>{{ $t('liquidity.position') }}</h3>
-                    <button @click="refreshPositions" style="padding: 8px 16px; background: #00CE7A; color: #1A1E1D; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    <button @click="refreshPositions" style="padding: 8px 16px; background: #5B9CF5; color: #1A1E1D; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
                         🔄 {{ $t('liquidity.refresh') || '刷新' }}
                     </button>
                 </div>
@@ -1507,7 +1507,7 @@ watch(
                     right: 0;
                     top: 50%;
                     transform: translateY(-50%);
-                    color: #00CE7A;
+                    color: #5B9CF5;
                     font-size: 14px;
                     font-weight: 500;
                 }
@@ -1538,14 +1538,14 @@ watch(
                         transition: all 0.2s ease;
 
                         &:hover {
-                            border-color: #00CE7A;
-                            color: #00CE7A;
+                            border-color: #5B9CF5;
+                            color: #5B9CF5;
                         }
                     }
 
                     .active {
-                        border: 1px solid #00CE7A;
-                        color: #00CE7A;
+                        border: 1px solid #5B9CF5;
+                        color: #5B9CF5;
                     }
                 }
 
@@ -1575,7 +1575,7 @@ watch(
 
             .status-exists {
                 background: rgba(0, 206, 122, 0.1);
-                color: #00CE7A;
+                color: #5B9CF5;
                 border: 1px solid rgba(0, 206, 122, 0.3);
             }
 
@@ -1599,7 +1599,7 @@ watch(
             transition: border-color 0.2s ease;
 
             &:hover {
-                border-color: #00CE7A;
+                border-color: #5B9CF5;
             }
 
             .setting-label {
@@ -1627,7 +1627,7 @@ watch(
             transition: all 0.2s ease;
 
             &:not([disabled]) {
-                background: #00CE7A;
+                background: #5B9CF5;
                 color: #1A1E1D;
                 cursor: pointer;
                 opacity: 1;

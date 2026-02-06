@@ -211,7 +211,7 @@ export default {
   },
   swap: {
     connectWallet: "connect wallet",
-    title: "Swap on  CP Chain",
+    title: "AeroSwap",
     sell: "Sell",
     buy: "Buy",
     balance: "Balance",
