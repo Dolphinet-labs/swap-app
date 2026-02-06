@@ -229,7 +229,7 @@ import daiIcon from '@/assets/coin/dai.png'
 import usdtIcon from '@/assets/coin/usdt.png'
 import usdcIcon from '@/assets/coin/usdol.png'
 import { BrowserProvider, Contract, parseUnits, formatUnits, MaxUint256, JsonRpcProvider } from 'ethers'
-import cpIcon from "@/assets/coin/Dolphinet.png"
+import cpIcon from "@/assets/coin/dol.png"
 import RemoveLiquidityModal from './remove.vue'
 import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import SlippageModal from "./SlippageModal.vue"

@@ -124,7 +124,7 @@ import ethIcon from '@/assets/coin/eth.png'
 import daiIcon from '@/assets/coin/dai.png'
 import usdtIcon from '@/assets/coin/usdt.png'
 import usdcIcon from '@/assets/coin/usdol.png'
-import cpIcon from "@/assets/coin/Dolphinet.png"
+import cpIcon from "@/assets/coin/dol.png"
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 // import { getWalletClient } from '@wagmi/core'
