@@ -4,7 +4,7 @@
       <el-row>
         <el-col :xs="3" :sm="4" :md="5" :lg="9" :xl="11">
           <div class="gridContent">
-            <a href="/" class="flex"><img src="../assets/images/cpChain.png" alt="" /></a>
+            <a href="/" class="flex"><img src="@/assets/images/dolphinet.png" alt="AeroSwap" /></a>
           </div>
           <!-- <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
             <el-menu-item index="1">Processing Center</el-menu-item>
@@ -20,7 +20,7 @@
               
                 <el-sub-menu index="6">
                   <template #title>
-                    <img src="@/assets/language.png" alt="" style="height: 20px" />
+                    <img src="@/assets/language.png" alt="" class="lang-icon" style="height: 20px" />
                   </template>
 
                   <el-menu-item index="6-3">{{
@@ -45,7 +45,7 @@
                 @select="handleSelect" style="background: transparent" :ellipsis="false">
                 <el-sub-menu index="6">
                   <template #title>
-                    <img src="@/assets/language.png" alt="" style="width: 20px" />
+                    <img src="@/assets/language.png" alt="" class="lang-icon" style="width: 20px" />
                   </template>
                   <el-menu-item index="6-3">{{
                     $t("navbar.language.en")
@@ -87,7 +87,7 @@
           </el-icon>
           <!-- <h3>{{ $t("link.titel") }}</h3> -->
           <div class="headerlogo">
-            <img src="./icons/logo.svg" alt="">
+            <img src="@/assets/images/logo.png" alt="AeroSwap" class="connect-logo" />
             <h4>{{ $t("link.titel") }}</h4>
           </div>
           <ul class="scroll-area">
@@ -499,7 +499,7 @@ const newTop = ref();
 // 计算 header 的样式
 const headerStyle = ref({
   top: "0px", // Initial top position
-  backgroundColor: "rgba(18, 18, 18, 0)", // 初始透明背景色
+  backgroundColor: "rgba(255, 255, 255, 0)", // 浅色主题透明背景
   transition: "background-color 0.3s ease", // 只保留背景色过渡效果
 });
 
@@ -510,12 +510,12 @@ const handleScroll = () => {
 
 // 监听滚动位置变化，修改 header 样式
 watchEffect(() => {
-  // 背景色透明度：超过 150px 时背景色变深至不透明
-  const opacity = scrollY.value > 70 ? 0.6 : scrollY.value / 70;
+  // 背景色透明度：超过 70px 时背景色变深至不透明
+  const opacity = scrollY.value > 70 ? 0.95 : scrollY.value / 70;
   const newTop = 0; // top 最大值为 30px
   // console.log(opacity)
   headerStyle.value = {
-    backgroundColor: `rgba(18, 18, 18, ${opacity})`,
+    backgroundColor: `rgba(255, 255, 255, ${opacity})`,
 
     transition: "top 0.3s ease,background-color 0.3s ease",
     top: `${newTop}px`, // 动态设置 top
@@ -584,6 +584,11 @@ const handleSelect = (index, indexPath) => {
 </script>
 
 <style lang="scss" scoped>
+/* 语言切换图标：浅色主题下使用深色以便看清 */
+.lang-icon {
+  filter: brightness(0);
+}
+
 .el-menu-demo2 {
   width: 60px;
 
@@ -631,8 +636,8 @@ const handleSelect = (index, indexPath) => {
   z-index: 100;
   width: 100%;
   height: 100vh;
-  color: #fff;
-  background: rgb(0, 0, 0, 0.8);
+  color: #2C2C2E;
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -643,7 +648,7 @@ const handleSelect = (index, indexPath) => {
     // height: 400px;
     max-width: 500px;
     border-radius: 16px;
-    background: var(---, #151517);
+    background: #FFFFFF;
     padding: 24px;
     position: absolute;
     max-width: 360px;
@@ -656,33 +661,39 @@ const handleSelect = (index, indexPath) => {
       font-size: 20px;
       font-style: normal;
       font-weight: 500;
+      color: #2C2C2E;
     }
 
     :deep(.el-icon) {
       position: absolute;
       right: 20px;
       top: 20px;
+      color: #2C2C2E;
     }
 
     .headerlogo {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      flex-wrap: wrap;
+      width: 100%;
+      padding-top: 8px;
 
-      img {
-        max-width: 72px;
+      .connect-logo {
+        width: 72px;
+        height: 72px;
+        object-fit: contain;
         margin-bottom: 16px;
+        display: block;
       }
 
       h4 {
-        color: #FFF;
-
+        color: #2C2C2E;
         font-size: 20px;
         font-style: normal;
         font-weight: 500;
         line-height: normal;
-        margin-bottom: 24px;
+        margin: 0 0 24px 0;
         width: 100%;
         text-align: center;
       }
@@ -701,7 +712,7 @@ const handleSelect = (index, indexPath) => {
     }
 
     .scroll-area::-webkit-scrollbar-thumb {
-      background-color: rgba(111, 105, 105, 0.5);
+      background-color: rgba(0, 0, 0, 0.2);
       /* 滑块颜色 */
       border-radius: 3px;
     }
@@ -728,7 +739,7 @@ const handleSelect = (index, indexPath) => {
         justify-content: space-between;
         align-items: center;
         border-radius: 16px;
-        background: var(---, #1e1e1e);
+        background: #F5F5F7;
         margin-bottom: 10px;
 
         img {
@@ -744,6 +755,7 @@ const handleSelect = (index, indexPath) => {
           font-style: normal;
           font-weight: 500;
           line-height: normal;
+          color: #2C2C2E;
           // margin-left: 30px;
         }
       }
@@ -765,7 +777,7 @@ const handleSelect = (index, indexPath) => {
     gap: 24px;
     position: relative;
     border-radius: 16px;
-    background: var(---, #151517);
+    background: #FFFFFF;
     cursor: pointer;
     position: absolute;
     animation: fadeIn 0.4s ease forwards;
@@ -774,6 +786,7 @@ const handleSelect = (index, indexPath) => {
       position: absolute;
       right: 20px;
       top: 20px;
+      color: #2C2C2E;
     }
 
     :deep(.el-button) {
@@ -807,6 +820,7 @@ const handleSelect = (index, indexPath) => {
         display: flex;
         align-items: center;
         justify-content: center;
+        color: #2C2C2E;
       }
 
       .exit {
@@ -821,14 +835,14 @@ const handleSelect = (index, indexPath) => {
           gap: 4px;
           flex: 1 0 0;
           border-radius: 100px;
-          background: var(---, #252629);
+          background: #F5F5F7;
           border: none;
           outline: none;
           font-size: 14px;
           font-style: normal;
           font-weight: 500;
           line-height: normal;
-          color: #fff;
+          color: #2C2C2E;
         }
 
         .blances {
@@ -883,7 +897,7 @@ const handleSelect = (index, indexPath) => {
       gap: 24px;
       position: relative;
       border-radius: 16px;
-      background: var(---, #151517);
+      background: #FFFFFF;
       cursor: pointer;
       animation: slide-up 0.3s ease;
       position: absolute;
@@ -893,6 +907,7 @@ const handleSelect = (index, indexPath) => {
         position: absolute;
         right: 20px;
         top: 20px;
+        color: #2C2C2E;
       }
 
       :deep(.el-button) {
@@ -926,6 +941,7 @@ const handleSelect = (index, indexPath) => {
           display: flex;
           align-items: center;
           justify-content: center;
+          color: #2C2C2E;
         }
 
         .exit {
@@ -940,14 +956,14 @@ const handleSelect = (index, indexPath) => {
             gap: 4px;
             flex: 1 0 0;
             border-radius: 100px;
-            background: var(---, #252629);
+            background: #F5F5F7;
             border: none;
             outline: none;
             font-size: 14px;
             font-style: normal;
             font-weight: 500;
             line-height: normal;
-            color: #fff;
+            color: #2C2C2E;
           }
 
           .blances {
@@ -1014,7 +1030,7 @@ a {
       width: 100%;
 
       img {
-        height: 30px;
+        height: 48px;
       }
     }
 
@@ -1039,8 +1055,8 @@ a {
         align-items: center;
         gap: 10px;
         border-radius: 100px;
-        border: 1px solid #fff;
-        color: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        color: #2C2C2E;
         width: 130px;
 
         font-size: 14px;
@@ -1055,9 +1071,9 @@ a {
       button:hover {
         cursor: pointer;
 
-        border: 1px solid #00ce7a;
+        border: 1px solid #5B9CF5;
 
-        color: #00ce7a;
+        color: #5B9CF5;
       }
 
       .menu {
@@ -1098,8 +1114,8 @@ a {
       z-index: 100;
       width: 100%;
       height: 100vh;
-      color: #fff;
-      background: rgb(0, 0, 0, 0.8);
+      color: #2C2C2E;
+      background: rgba(0, 0, 0, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1120,7 +1136,7 @@ a {
         width: 100%;
 
         img {
-          height: 20px;
+          height: 32px;
         }
       }
 
@@ -1145,8 +1161,8 @@ a {
           align-items: center;
           gap: 10px;
           border-radius: 100px;
-          border: 1px solid #fff;
-          color: #fff;
+          border: 1px solid rgba(0, 0, 0, 0.12);
+          color: #2C2C2E;
 
           font-size: 16px;
           font-weight: 500;
@@ -1177,8 +1193,8 @@ a {
             width: 100px;
             padding: 0 5px;
             border-radius: 100px;
-            border: 1px solid #fff;
-            color: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            color: #2C2C2E;
             font-family: "PingFang SC";
             font-size: 12px;
             font-weight: 500;
@@ -1188,13 +1204,13 @@ a {
           button:hover {
             cursor: pointer;
 
-            border: 1px solid #00ce7a;
+            border: 1px solid #5B9CF5;
 
-            color: #00ce7a;
+            color: #5B9CF5;
           }
 
           :deep(.el-icon:hover) {
-            color: #00ce7a;
+            color: #5B9CF5;
           }
         }
       }

@@ -1,14 +1,22 @@
-/* 默认主题变量定义 */
+/* 浅色主题变量定义 - AeroSwap */
 :root {
+  /* 背景色 */
   --bg-color   : #ffffff;
-  --text-color : #1a1a1a;
-  --el-bg-color: #121212;
-  --color:#fff;
-  --el-menu-border-color:none;
-  --el-menu-text-color:#fff;
-  --el-menu-bg-color:#151517;
-  --el-menu-active-color:#00CE7A;
-  --el-border-color-light:none;
+  --text-color : #2C2C2E;
+  
+  /* 卡片背景 */
+  --card-bg: #FFFFFF;
+  --card-border: rgba(0, 0, 0, 0.08);
+  
+  /* Element Plus组件变量 */
+  --el-bg-color: #FFFFFF;
+  --color: #2C2C2E;
+  --el-text-color: #2C2C2E;
+  --el-menu-border-color: none;
+  --el-menu-text-color: #2C2C2E;
+  --el-menu-bg-color: #FFFFFF;
+  --el-menu-active-color: #5B9CF5;
+  --el-border-color-light: rgba(0, 0, 0, 0.08);
 }
 
 /* 暗黑主题 */

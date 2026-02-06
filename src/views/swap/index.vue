@@ -41,9 +41,9 @@
         <div class="swap-switch-row" @click="reverseToken">
           <div class="swap-switch-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M5 9L8 6M8 6L11 9M8 6V18" stroke="#00CE7A" stroke-width="1.5" stroke-linecap="round"
+              <path d="M5 9L8 6M8 6L11 9M8 6V18" stroke="#5B9CF5" stroke-width="1.5" stroke-linecap="round"
                 stroke-linejoin="round" />
-              <path d="M19 15L16 18M16 18L13 15M16 18L16 6" stroke="#00CE7A" stroke-width="1.5" stroke-linecap="round"
+              <path d="M19 15L16 18M16 18L13 15M16 18L16 6" stroke="#5B9CF5" stroke-width="1.5" stroke-linecap="round"
                 stroke-linejoin="round" />
             </svg>
           </div>
@@ -124,7 +124,7 @@ import ethIcon from '@/assets/coin/eth.png'
 import daiIcon from '@/assets/coin/dai.png'
 import usdtIcon from '@/assets/coin/usdt.png'
 import usdcIcon from '@/assets/coin/usdol.png'
-import cpIcon from "@/assets/coin/Dolphinet.png"
+import cpIcon from "@/assets/coin/dol.png"
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 // import { getWalletClient } from '@wagmi/core'
@@ -211,7 +211,7 @@ const { address, status } = useAccount()
 import { eventBus } from '../../utils/eventBus'
 
 import VConsole from 'vconsole';
-const vConsole = new VConsole();
+const vConsole = new VConsole({ theme: 'dark' });
 // const { connector } = useAccount()
 // console.log(connector)
 
@@ -731,8 +731,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 #container {
-  background: #121212 url("../../assets/faucet_bg.png") no-repeat;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #E8F4F8 0%, #F5E8F0 100%);
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -750,7 +749,7 @@ onMounted(() => {
   }
 
   h1 {
-    color: #FFF;
+    color: #2C2C2E;
     text-align: center;
 
     font-size: 40px;
@@ -795,19 +794,20 @@ input[type="number"] {
 .swap-card {
   max-width: 448px;
   border-radius: 24px;
-  background: var(---, #1E1E1E);
-  border: 1.5px solid #222326;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   padding: 16px;
   position: relative;
 
   .swap-row {
     border-radius: 20px;
-    border: 1px solid #2E2F32;
+    border: 1px solid rgba(0, 0, 0, 0.08);
     margin-bottom: 16px;
     padding: 16px;
 
     .swap-label {
-      color: #FFF;
+      color: #2C2C2E;
       font-size: 14px;
       margin-bottom: 10px;
       text-align: left;
@@ -821,7 +821,7 @@ input[type="number"] {
       .swap-amount-input {
         background: transparent;
         border: none;
-        color: #fff;
+        color: #2C2C2E;
         outline: none;
         font-size: 32px;
         font-weight: 600;
@@ -832,8 +832,8 @@ input[type="number"] {
         display: flex;
         align-items: center;
         border-radius: 100px;
-        border: 1px solid #2E2F32;
-        background: #151517;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        background: #F5F5F7;
         padding: 8px 12px;
         cursor: pointer;
         // width: 81px;
@@ -845,21 +845,21 @@ input[type="number"] {
         }
 
         span {
-          color: #fff;
+          color: #2C2C2E;
           font-size: 12px;
           margin: 0 2px;
         }
       }
 
       .swap-token-btn.select {
-        background: #15e784;
+        background: #5B9CF5;
         color: #fff;
       }
     }
 
     .swap-balance {
       font-size: 14px;
-      color: #fff;
+      color: #8E8E93;
       margin-top: 5px;
       text-align: left;
       display: flex;
@@ -877,8 +877,8 @@ input[type="number"] {
     // transform: translateY(-50%);
 
     .swap-switch-btn {
-      border: 1px solid #2E2F32;
-      background: #1E1E1E;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: #FFFFFF;
       border-radius: 50%;
 
       width: 48px;
@@ -896,12 +896,12 @@ input[type="number"] {
     padding: 0 16px;
     justify-content: space-between;
     border-radius: 100px;
-    border: 1px solid #2E2F32;
+    border: 1px solid rgba(0, 0, 0, 0.12);
     align-items: center;
     margin-bottom: 16px;
 
     .setting-label {
-      color: #fff;
+      color: #2C2C2E;
       font-size: 15px;
       font-weight: 500;
       display: flex;
@@ -910,7 +910,7 @@ input[type="number"] {
 
     .slip-btn {
       background: none;
-      color: #fff;
+      color: #2C2C2E;
       border: none;
       font-size: 14px;
       font-weight: 600;
@@ -923,8 +923,8 @@ input[type="number"] {
     height: 48px;
     border: none;
     border-radius: 100px;
-    background: #2E2F32;
-    color: #8E8E92;
+    background: #E5E5EA;
+    color: #8E8E93;
     font-size: 16px;
     font-weight: 700;
     cursor: not-allowed;
@@ -933,8 +933,8 @@ input[type="number"] {
     outline: none;
 
     &:not([disabled]) {
-      background: #00CE7A;
-      color: #1A1E1D;
+      background: #5B9CF5;
+      color: #FFFFFF;
       cursor: pointer;
       opacity: 1;
     }

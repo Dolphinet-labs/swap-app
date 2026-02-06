@@ -191,14 +191,14 @@ function confirm() {
       border-radius: 999px;
       border: none;
       height: 38px;
-      background: #14e18d;
+      background: #5B9CF5;
       color: #111;
       font-weight: bold;
       font-size: 16px;
       margin-top: 2px;
       cursor: pointer;
       transition: background 0.2s;
-      &:hover { background: #00ce7a; }
+      &:hover { background: #4A90E2; }
     }
   }
 }

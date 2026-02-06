@@ -295,13 +295,13 @@ function confirm() {
         flex: 1;
         
         &:hover {
-          border-color: #00CE7A;
-          color: #00CE7A;
+          border-color: #5B9CF5;
+          color: #5B9CF5;
         }
         
         &.active {
-          border: 1px solid #00CE7A;
-          color: #00CE7A;
+          border: 1px solid #5B9CF5;
+          color: #5B9CF5;
           background: rgba(0, 206, 122, 0.1);
         }
       }
@@ -358,7 +358,7 @@ function confirm() {
       border-radius: 999px;
       border: none;
       height: 38px;
-      background: #14e18d;
+      background: #5B9CF5;
       color: #111;
       font-weight: bold;
       font-size: 16px;
@@ -367,7 +367,7 @@ function confirm() {
       transition: background 0.2s;
       
       &:hover:not(:disabled) {
-        background: #00ce7a;
+        background: #5B9CF5;
       }
       
       &:disabled {

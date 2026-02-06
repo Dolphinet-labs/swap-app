@@ -1,4 +1,4 @@
-# Dolphinet Dex
+# AeroSwap
 
 ## Project setup
 ```
