@@ -4,7 +4,7 @@
       <el-row>
         <el-col :xs="3" :sm="4" :md="5" :lg="9" :xl="11">
           <div class="gridContent">
-            <a href="/" class="flex"><img src="../assets/images/dolphinet.png" alt="AeroSwap" /></a>
+            <a href="/" class="flex"><img src="@/assets/images/logo.png" alt="AeroSwap" /></a>
           </div>
           <!-- <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
             <el-menu-item index="1">Processing Center</el-menu-item>
@@ -87,7 +87,7 @@
           </el-icon>
           <!-- <h3>{{ $t("link.titel") }}</h3> -->
           <div class="headerlogo">
-            <img src="@/assets/images/connect-wallet-logo.png" alt="AeroSwap" class="connect-logo" />
+            <img src="@/assets/images/logo.png" alt="AeroSwap" class="connect-logo" />
             <h4>{{ $t("link.titel") }}</h4>
           </div>
           <ul class="scroll-area">
