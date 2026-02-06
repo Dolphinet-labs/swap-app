@@ -96,3 +96,28 @@ body::-webkit-scrollbar {
   display: none;
   /* Chrome/Safari/Edge */
 }
+
+/* vConsole 蓝色主题：覆盖默认绿色为浅蓝 */
+#__vconsole {
+  .vc-switch,
+  [class*='vc-switch'] {
+    background: #5B9CF5 !important;
+    background-color: #5B9CF5 !important;
+  }
+  .vc-tab.vc-actived,
+  .vc-tab_active,
+  [class*='vc-tab'][class*='actived'],
+  [class*='vc-tab'][class*='active'] {
+    color: #5B9CF5 !important;
+    border-color: #5B9CF5 !important;
+  }
+  [class*='vc-btn'],
+  .vc-button {
+    background: #5B9CF5 !important;
+    background-color: #5B9CF5 !important;
+    border-color: #5B9CF5 !important;
+  }
+  a {
+    color: #5B9CF5 !important;
+  }
+}

@@ -211,7 +211,7 @@ const { address, status } = useAccount()
 import { eventBus } from '../../utils/eventBus'
 
 import VConsole from 'vconsole';
-const vConsole = new VConsole();
+const vConsole = new VConsole({ theme: 'dark' });
 // const { connector } = useAccount()
 // console.log(connector)
 

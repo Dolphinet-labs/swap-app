@@ -87,7 +87,7 @@
           </el-icon>
           <!-- <h3>{{ $t("link.titel") }}</h3> -->
           <div class="headerlogo">
-            <img src="./icons/logo.svg" alt="">
+            <img src="@/assets/images/connect-wallet-logo.png" alt="AeroSwap" class="connect-logo" />
             <h4>{{ $t("link.titel") }}</h4>
           </div>
           <ul class="scroll-area">
@@ -673,23 +673,27 @@ const handleSelect = (index, indexPath) => {
 
     .headerlogo {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      flex-wrap: wrap;
+      width: 100%;
+      padding-top: 8px;
 
-      img {
-        max-width: 72px;
+      .connect-logo {
+        width: 72px;
+        height: 72px;
+        object-fit: contain;
         margin-bottom: 16px;
+        display: block;
       }
 
       h4 {
         color: #2C2C2E;
-
         font-size: 20px;
         font-style: normal;
         font-weight: 500;
         line-height: normal;
-        margin-bottom: 24px;
+        margin: 0 0 24px 0;
         width: 100%;
         text-align: center;
       }
