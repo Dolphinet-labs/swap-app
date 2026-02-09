@@ -210,8 +210,8 @@ const { connect, connectors, error } = useConnect();
 const { address, status } = useAccount()
 import { eventBus } from '../../utils/eventBus'
 
-import VConsole from 'vconsole';
-const vConsole = new VConsole({ theme: 'dark' });
+// import VConsole from 'vconsole';
+// const vConsole = new VConsole({ theme: 'dark' });
 // const { connector } = useAccount()
 // console.log(connector)
 
