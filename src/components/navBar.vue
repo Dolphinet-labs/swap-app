@@ -1030,7 +1030,7 @@ a {
       width: 100%;
 
       img {
-        height: 20px;
+        height: 22px;
         margin-top: 8px;
       }
     }
@@ -1137,8 +1137,8 @@ a {
         width: 100%;
 
         img {
-          height: 14px;
-          margin-top: 6px;
+          height: 15px;
+          margin-top: 8px;
         }
       }
 
