@@ -1030,8 +1030,8 @@ a {
       width: 100%;
 
       img {
-        height: 28px;
-        margin-top: 4px;
+        height: 20px;
+        margin-top: 8px;
       }
     }
 
@@ -1137,8 +1137,8 @@ a {
         width: 100%;
 
         img {
-          height: 20px;
-          margin-top: 3px;
+          height: 14px;
+          margin-top: 6px;
         }
       }
 
